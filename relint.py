@@ -85,7 +85,10 @@ def main():
             lines = match.string.splitlines()
 
         line_no = match.string[:match.start()].count('\n')
-        print(f"{filename}:{line_no + 1} {test.name}")
+        output_format = "{filename}:{line_no} {test.name}"
+        print(output_format.format(
+            filename=filename, line_no=line_no + 1, test=test,
+        ))
         if test.hint:
             print("Hint:", test.hint)
         print(">   ", lines[line_no])
