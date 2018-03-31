@@ -5,6 +5,13 @@ ReLint
 
 *Write your own linting rules using regular expressions.*
 
+Installation
+------------
+
+.. code-block:: bash
+
+    pip install relint
+
 Usage
 -----
 
