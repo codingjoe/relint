@@ -76,7 +76,10 @@ def main():
     _filename = ''
     lines = []
 
+    exit_code = 0
+
     for filename, test, match in matches:
+        exit_code = 1
         if filename != _filename:
             _filename = filename
             lines = match.string.splitlines()
@@ -86,6 +89,8 @@ def main():
         if test.hint:
             print("Hint:", test.hint)
         print(">   ", lines[line_no])
+
+    exit(exit_code)
 
 
 if __name__ == '__main__':
