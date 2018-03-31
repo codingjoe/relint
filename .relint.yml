@@ -1,0 +1,6 @@
+- name: No ToDo
+  pattern: "[tT][oO][dD][oO]"
+  hint: Get it done right away!
+  filename:
+    - "*.py"
+    - "*.js"
