@@ -28,7 +28,7 @@ def parse_args():
     return parser.parse_args()
 
 
-Test = namedtuple('Test', ('name', 'pattern', 'hint', 'filename'))
+Test = namedtuple('Test', ('name', 'pattern', 'hint', 'filename', 'error'))
 
 
 def load_config(path):
@@ -42,6 +42,7 @@ def load_config(path):
                 pattern=re.compile(test['pattern']),
                 hint=test.get('hint'),
                 filename=filename,
+                error=test.get('error', True)
             )
 
 
@@ -79,7 +80,7 @@ def main():
     exit_code = 0
 
     for filename, test, match in matches:
-        exit_code = 1
+        exit_code = test.error if exit_code == 0 else exit_code
         if filename != _filename:
             _filename = filename
             lines = match.string.splitlines()

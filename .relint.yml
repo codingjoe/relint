@@ -4,3 +4,4 @@
   filename:
     - "*.py"
     - "*.js"
+  error: false
