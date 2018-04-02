@@ -85,14 +85,22 @@ def main():
             _filename = filename
             lines = match.string.splitlines()
 
-        line_no = match.string[:match.start()].count('\n')
+        start_line_no = match.string[:match.start()].count('\n')
+        end_line_no = match.string[:match.end()].count('\n')
         output_format = "{filename}:{line_no} {test.name}"
         print(output_format.format(
-            filename=filename, line_no=line_no + 1, test=test,
+            filename=filename, line_no=start_line_no + 1, test=test,
         ))
         if test.hint:
             print("Hint:", test.hint)
-        print(">   ", lines[line_no])
+        match_lines = (
+            "{line_no}>    {code_line}".format(
+                line_no=no + start_line_no + 1,
+                code_line=line,
+            )
+            for no, line in enumerate(lines[start_line_no:end_line_no + 1])
+        )
+        print(*match_lines, sep="\n")
 
     exit(exit_code)
 
