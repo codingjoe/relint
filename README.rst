@@ -45,3 +45,34 @@ The following command will lint all files in the current directory:
 
 The default configuration file name is `.relint.yaml` within your working
 directory, but you can provide any YAML or JSON file.
+
+Samples
+-------
+
+.. code-block:: yaml
+
+    - name: db fixtures
+      pattern: "def test_[^(]+\\([^)]*(customer|product)(, |\\))"
+      hint: Use model_mommy recipies instead of db fixtures.
+      filename:
+        - "**/test_*.py"
+
+    - name: model_mommy recipies
+      pattern: "mommy\\.make\\("
+      hint: Please use mommy.make_recipe instead of mommy.make.
+      filename:
+        - "**/test_*.py"
+        - "conftest.py"
+        - "**/conftest.py"
+
+    - name: the database is lava
+      pattern: "@pytest.fixture.*\\n[ ]*def [^(]+\\([^)]*(db|transactional_db)(, |\\))"
+      hint: Please do not create db fixtures but model_mommy recipies instead.
+      filename:
+        - "*.py"
+
+    - name: No logger in management commands
+      pattern: "(logger|import logging)"
+      hint: "Please write to self.stdout or self.stderr in favor of using a logger."
+      filename:
+        - "*/management/commands/*.py"
