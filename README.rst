@@ -46,6 +46,15 @@ The following command will lint all files in the current directory:
 The default configuration file name is `.relint.yaml` within your working
 directory, but you can provide any YAML or JSON file.
 
+If you prefer linting changed files (cached on git) you can use the option
+`--diff [-d]`:
+
+.. code-block:: bash
+
+    relint my_file.py --diff
+
+This option is useful for pre-commit purposes.
+
 Samples
 -------
 
