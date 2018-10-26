@@ -4,7 +4,7 @@ import glob
 import re
 from collections import namedtuple
 from itertools import chain
-
+import subprocess  # nosec
 import yaml
 
 
@@ -24,6 +24,12 @@ def parse_args():
         type=str,
         default='.relint.yml',
         help='Path to config file, default: .relint.yml'
+    )
+    parser.add_argument(
+        '--diff',
+        '-d',
+        action='store_true',
+        help='Analyze content from git diff.'
     )
     return parser.parse_args()
 
@@ -46,17 +52,53 @@ def load_config(path):
             )
 
 
-def lint_file(filename, tests):
-    try:
-        with open(filename) as fs:
-            content = fs.read()
-    except (IsADirectoryError, UnicodeDecodeError):
-        pass
-    else:
+def lint_file(filename, tests, diff=None):
+    if diff and diff.get(filename):
         for test in tests:
-            if any(fnmatch.fnmatch(filename, fp) for fp in test.filename):
+            for line_number, content in diff.get(filename).items():
                 for match in test.pattern.finditer(content):
-                    yield filename, test, match
+                    yield filename, test, match, line_number
+    else:
+        try:
+            with open(filename) as fs:
+                content = fs.read()
+        except (IsADirectoryError, UnicodeDecodeError):
+            pass
+        else:
+            for test in tests:
+                if any(fnmatch.fnmatch(filename, fp) for fp in test.filename):
+                    for match in test.pattern.finditer(content):
+                        yield filename, test, match, None
+
+
+def parse_diff(output):
+    changed_content = {}
+    current_file = None
+    line_after_number_line = False
+    current_line = None
+
+    for line in output.split('\n'):
+        if line.startswith('diff'):
+            current_file = line[line.rfind(' b/')+3:]
+            line_after_number_line = False
+
+        elif line.startswith('@@'):
+            result = re.findall(r'(([+]|[-])\d*[,]?\d*)', line)
+            result = result[1][0].replace('+', '').split(',')
+            if result:
+                current_line = int(result[0])
+            line_after_number_line = True
+
+        elif line_after_number_line and line.startswith('+'):
+            if changed_content.get(current_file):
+                changed_content[current_file][current_line] = line[1:]
+            else:
+                changed_content[current_file] = {
+                    current_line: line[1:]
+                }
+            current_line += 1
+
+    return changed_content
 
 
 def main():
@@ -69,8 +111,13 @@ def main():
 
     tests = list(load_config(args.config))
 
+    diff = None
+    if args.diff:
+        output = subprocess.run(['git', 'diff', '-U0'], stdout=subprocess.PIPE)
+        diff = parse_diff(output.stdout.decode('utf-8'))
+
     matches = chain.from_iterable(
-        lint_file(path, tests)
+        lint_file(path, tests, diff)
         for path in paths
     )
 
@@ -79,28 +126,44 @@ def main():
 
     exit_code = 0
 
-    for filename, test, match in matches:
-        exit_code = test.error if exit_code == 0 else exit_code
-        if filename != _filename:
-            _filename = filename
-            lines = match.string.splitlines()
+    if diff:
+        for filename, test, match, line_number in matches:
+            exit_code = test.error if exit_code == 0 else exit_code
 
-        start_line_no = match.string[:match.start()].count('\n')
-        end_line_no = match.string[:match.end()].count('\n')
-        output_format = "{filename}:{line_no} {test.name}"
-        print(output_format.format(
-            filename=filename, line_no=start_line_no + 1, test=test,
-        ))
-        if test.hint:
-            print("Hint:", test.hint)
-        match_lines = (
-            "{line_no}>    {code_line}".format(
-                line_no=no + start_line_no + 1,
-                code_line=line,
+            output_format = "{filename}:{line_no} {test.name}"
+            print(output_format.format(
+                filename=filename, line_no=line_number, test=test,
+            ))
+
+            if test.hint:
+                print("Hint:", test.hint)
+
+            print("{line_no}>    {code_line}\n".format(
+                line_no=line_number,
+                code_line=match.string,
+            ))
+    else:
+        for filename, test, match, _ in matches:
+            exit_code = test.error if exit_code == 0 else exit_code
+            if filename != _filename:
+                _filename = filename
+                lines = match.string.splitlines()
+            start_line_no = match.string[:match.start()].count('\n')
+            end_line_no = match.string[:match.end()].count('\n')
+            output_format = "{filename}:{line_no} {test.name}"
+            print(output_format.format(
+                filename=filename, line_no=start_line_no + 1, test=test,
+            ))
+            if test.hint:
+                print("Hint:", test.hint)
+            match_lines = (
+                "{line_no}>    {code_line}".format(
+                    line_no=no + start_line_no + 1,
+                    code_line=line,
+                )
+                for no, line in enumerate(lines[start_line_no:end_line_no + 1])
             )
-            for no, line in enumerate(lines[start_line_no:end_line_no + 1])
-        )
-        print(*match_lines, sep="\n")
+            print(*match_lines, sep="\n")
 
     exit(exit_code)
 
