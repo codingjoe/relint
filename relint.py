@@ -18,16 +18,16 @@ def parse_args():
         help='Path to one or multiple files to be checked.'
     )
     parser.add_argument(
-        '--config',
         '-c',
+        '--config',
         metavar='CONFIG_FILE',
         type=str,
         default='.relint.yml',
         help='Path to config file, default: .relint.yml'
     )
     parser.add_argument(
-        '--diff',
         '-d',
+        '--diff',
         action='store_true',
         help='Analyze content from git diff.'
     )
@@ -77,13 +77,15 @@ def parse_diff(output):
     line_after_number_line = False
     current_line = None
 
-    for line in output.split('\n'):
+    pattern = re.compile(r"(([+]|[-])\d*[,]?\d*)")
+
+    for line in output.splitlines():
         if line.startswith('diff'):
             current_file = line[line.rfind(' b/')+3:]
             line_after_number_line = False
 
         elif line.startswith('@@'):
-            result = re.findall(r'(([+]|[-])\d*[,]?\d*)', line)
+            result = re.findall(pattern, line)
             result = result[1][0].replace('+', '').split(',')
             if result:
                 current_line = int(result[0])
@@ -113,14 +115,14 @@ def main():
 
     diff = None
     if args.diff:
-        output = subprocess.run(['git', 'diff', '-U0'], stdout=subprocess.PIPE)
-        diff = parse_diff(output.stdout.decode('utf-8'))
+        git_command = ['git', 'diff', '-U0', '--cached']
+        output = subprocess.check_output(git_command, encoding='utf-8')
+        diff = parse_diff(output)
 
     matches = chain.from_iterable(
         lint_file(path, tests, diff)
         for path in paths
     )
-
     _filename = ''
     lines = []
 
@@ -138,7 +140,7 @@ def main():
             if test.hint:
                 print("Hint:", test.hint)
 
-            print("{line_no}>    {code_line}\n".format(
+            print("{line_no}>    {code_line}".format(
                 line_no=line_number,
                 code_line=match.string,
             ))
