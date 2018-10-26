@@ -56,6 +56,11 @@ class TestParseGitDiff:
 
         assert parsed_content == expected
 
+    def test_return_empty_dict_when_diff_returns_empty(self):
+        parsed_content = parse_diff('')
+
+        assert parsed_content == {}
+
 
 class TestMain:
     @patch('argparse.ArgumentParser.parse_args',

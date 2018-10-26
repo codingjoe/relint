@@ -103,6 +103,24 @@ def parse_diff(output):
     return changed_content
 
 
+def print_culprits(filename, start_line_no, test, lines):
+    output_format = "{filename}:{line_no} {test.name}"
+    print(output_format.format(
+        filename=filename, line_no=start_line_no, test=test,
+    ))
+    if test.hint:
+        print("Hint:", test.hint)
+
+    match_lines = (
+        "{line_no}>    {code_line}".format(
+            line_no=start_line_no,
+            code_line=line,
+        )
+        for no, line in lines
+    )
+    print(*match_lines, sep="\n")
+
+
 def main():
     args = parse_args()
     paths = {
@@ -128,44 +146,30 @@ def main():
 
     exit_code = 0
 
-    if diff:
+    if diff == {}:  # when nothing is cached
+        pass
+    elif diff:
         for filename, test, match, line_number in matches:
             exit_code = test.error if exit_code == 0 else exit_code
 
-            output_format = "{filename}:{line_no} {test.name}"
-            print(output_format.format(
-                filename=filename, line_no=line_number, test=test,
-            ))
-
-            if test.hint:
-                print("Hint:", test.hint)
-
-            print("{line_no}>    {code_line}".format(
-                line_no=line_number,
-                code_line=match.string,
-            ))
+            lines = [(line_number, match.string)]
+            print_culprits(filename, line_number, test, lines)
     else:
+
         for filename, test, match, _ in matches:
             exit_code = test.error if exit_code == 0 else exit_code
             if filename != _filename:
                 _filename = filename
                 lines = match.string.splitlines()
+
             start_line_no = match.string[:match.start()].count('\n')
             end_line_no = match.string[:match.end()].count('\n')
-            output_format = "{filename}:{line_no} {test.name}"
-            print(output_format.format(
-                filename=filename, line_no=start_line_no + 1, test=test,
-            ))
-            if test.hint:
-                print("Hint:", test.hint)
-            match_lines = (
-                "{line_no}>    {code_line}".format(
-                    line_no=no + start_line_no + 1,
-                    code_line=line,
-                )
+
+            lines = (
+                (no + start_line_no + 1, line)
                 for no, line in enumerate(lines[start_line_no:end_line_no + 1])
             )
-            print(*match_lines, sep="\n")
+            print_culprits(filename, start_line_no + 1, test, lines)
 
     exit(exit_code)
 
