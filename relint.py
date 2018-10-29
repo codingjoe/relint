@@ -85,7 +85,7 @@ def parse_diff(output):
             line_after_number_line = False
 
         elif line.startswith('@@'):
-            result = re.findall(pattern, line)
+            result = pattern.findall(line)
             result = result[1][0].replace('+', '').split(',')
             if result:
                 current_line = int(result[0])
