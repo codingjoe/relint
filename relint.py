@@ -3,7 +3,6 @@ import fnmatch
 import glob
 import re
 from collections import namedtuple
-from itertools import chain
 import subprocess  # nosec
 import yaml
 
@@ -52,23 +51,22 @@ def load_config(path):
             )
 
 
-def lint_file(filename, tests, diff=None):
-    if diff and diff.get(filename):
-        for test in tests:
-            for line_number, content in diff.get(filename).items():
-                for match in test.pattern.finditer(content):
-                    yield filename, test, match, line_number
-    else:
-        try:
-            with open(filename) as fs:
-                content = fs.read()
-        except (IsADirectoryError, UnicodeDecodeError):
-            pass
-        else:
-            for test in tests:
-                if any(fnmatch.fnmatch(filename, fp) for fp in test.filename):
-                    for match in test.pattern.finditer(content):
-                        yield filename, test, match, None
+def lint_file(content, tests):
+    for test in tests:
+        for filename, content in content.items():
+
+            if any(fnmatch.fnmatch(filename, fp) for fp in test.filename):
+                for predefined_line_number, line in content.items():
+                    for match in test.pattern.finditer(line):
+                        start_line_no = match.string[:match.start()].count('\n')
+
+                        if predefined_line_number is None:  # whole content
+                            line_number = start_line_no + 1
+                        else:
+                            line_number = predefined_line_number
+
+                        lines = match.string.splitlines()
+                        yield filename, test, lines[start_line_no], line_number
 
 
 def parse_diff(output):
@@ -103,22 +101,48 @@ def parse_diff(output):
     return changed_content
 
 
-def print_culprits(filename, start_line_no, test, lines):
-    output_format = "{filename}:{line_no} {test.name}"
-    print(output_format.format(
-        filename=filename, line_no=start_line_no, test=test,
-    ))
-    if test.hint:
-        print("Hint:", test.hint)
+def print_culprits(matches):
+    exit_code = 0
 
-    match_lines = (
-        "{line_no}>    {code_line}".format(
-            line_no=start_line_no,
-            code_line=line,
-        )
-        for no, line in lines
-    )
-    print(*match_lines, sep="\n")
+    for filename, test, match, line_number in matches:
+        exit_code = test.error if exit_code == 0 else exit_code
+
+        output_format = "{filename}:{line_no} {test.name}"
+        print(output_format.format(
+            filename=filename, line_no=line_number, test=test,
+        ))
+        if test.hint:
+            print("Hint:", test.hint)
+
+        print("{line_no}>    {code_line}".format(
+            line_no=line_number,
+            code_line=match,
+        ))
+
+    return exit_code
+
+
+def filter_paths_from_diff(content, paths):
+    filtered_content = content.copy()
+    for filename in content.keys():
+        if filename not in paths:
+            del filtered_content[filename]
+    return filtered_content
+
+
+def content_from_paths(paths):
+    contents = {}
+
+    for filename in paths:
+        try:
+            with open(filename) as fs:
+                contents[filename] = {
+                    None: fs.read()
+                }
+        except (IsADirectoryError, UnicodeDecodeError):
+            pass
+
+    return contents
 
 
 def main():
@@ -131,46 +155,16 @@ def main():
 
     tests = list(load_config(args.config))
 
-    diff = None
     if args.diff:
         git_command = ['git', 'diff', '-U0', '--cached']
         output = subprocess.check_output(git_command, encoding='utf-8')
-        diff = parse_diff(output)
-
-    matches = chain.from_iterable(
-        lint_file(path, tests, diff)
-        for path in paths
-    )
-    _filename = ''
-    lines = []
-
-    exit_code = 0
-
-    if diff == {}:  # when nothing is cached
-        pass
-    elif diff:
-        for filename, test, match, line_number in matches:
-            exit_code = test.error if exit_code == 0 else exit_code
-
-            lines = [(line_number, match.string)]
-            print_culprits(filename, line_number, test, lines)
+        content = parse_diff(output)
+        content = filter_paths_from_diff(content, paths)
     else:
+        content = content_from_paths(paths)
 
-        for filename, test, match, _ in matches:
-            exit_code = test.error if exit_code == 0 else exit_code
-            if filename != _filename:
-                _filename = filename
-                lines = match.string.splitlines()
-
-            start_line_no = match.string[:match.start()].count('\n')
-            end_line_no = match.string[:match.end()].count('\n')
-
-            lines = (
-                (no + start_line_no + 1, line)
-                for no, line in enumerate(lines[start_line_no:end_line_no + 1])
-            )
-            print_culprits(filename, start_line_no + 1, test, lines)
-
+    matches = lint_file(content, tests)
+    exit_code = print_culprits(matches)
     exit(exit_code)
 
 

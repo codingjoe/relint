@@ -1,10 +1,9 @@
-# TODO: I'll do it later, promise
 import argparse
 from unittest.mock import patch
 
 import pytest
 
-from relint import parse_diff, main
+from relint import parse_diff, main, filter_paths_from_diff
 
 
 class TestParseGitDiff:
@@ -56,10 +55,46 @@ class TestParseGitDiff:
 
         assert parsed_content == expected
 
+    def test_parse_complete_diff(self):
+        output = "diff --git a/test_relint.py b/test_relint.py\n" \
+                "index 9c7f392..9bde2ad 100644\n" \
+                "--- a/test_relint.py\n" \
+                "+++ b/test_relint.py\n" \
+                "@@ -1,0 +2 @@\n" \
+                "+# TODO: I'll do it later, promise\n"
+
+        parsed_content = parse_diff(output)
+        expected = {
+            'test_relint.py': {
+                2: "# TODO: I'll do it later, promise",
+            }
+        }
+
+        assert parsed_content == expected
+
     def test_return_empty_dict_when_diff_returns_empty(self):
         parsed_content = parse_diff('')
 
         assert parsed_content == {}
+
+    def test_filter_paths_chosen_by_user(self):
+        content = {
+            'test_relint.py': {
+                2: "# TODO: I'll do it later, promise",
+            },
+            'setup.py': {
+                6: "# TODO: I swear I'll do it later, promise",
+            }
+        }
+        expected = {
+            'test_relint.py': {
+                2: "# TODO: I'll do it later, promise",
+            }
+        }
+
+        paths = {'test_relint.py'}
+
+        assert filter_paths_from_diff(content, paths) == expected
 
 
 class TestMain:
