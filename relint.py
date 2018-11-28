@@ -2,9 +2,22 @@ import argparse
 import fnmatch
 import glob
 import re
+import sys
 from collections import namedtuple
-import subprocess  # nosec
+from itertools import chain
+
 import yaml
+
+
+GIT_DIFF_LINE_NUMBERS_PATTERN = re.compile(
+    r"@ -\d+(,\d+)? \+(\d+)(,)?(\d+)? @")
+GIT_DIFF_FILENAME_PATTERN = re.compile(
+    r"(?:\n|^)diff --git a\/.* b\/(.*)(?:\n|$)")
+GIT_DIFF_SPLIT_PATTERN = re.compile(
+    r"(?:\n|^)diff --git a\/.* b\/.*(?:\n|$)")
+
+
+Test = namedtuple('Test', ('name', 'pattern', 'hint', 'filename', 'error'))
 
 
 def parse_args():
@@ -33,9 +46,6 @@ def parse_args():
     return parser.parse_args()
 
 
-Test = namedtuple('Test', ('name', 'pattern', 'hint', 'filename', 'error'))
-
-
 def load_config(path):
     with open(path) as fs:
         for test in yaml.load(fs):
@@ -51,98 +61,119 @@ def load_config(path):
             )
 
 
-def lint_file(content, tests):
-    for test in tests:
-        for filename, content in content.items():
-
+def lint_file(filename, tests):
+    try:
+        with open(filename) as fs:
+            content = fs.read()
+    except (IsADirectoryError, UnicodeDecodeError):
+        pass
+    else:
+        for test in tests:
             if any(fnmatch.fnmatch(filename, fp) for fp in test.filename):
-                for predefined_line_number, line in content.items():
-                    for match in test.pattern.finditer(line):
-                        start_line_no = match.string[:match.start()].count('\n')
-
-                        if predefined_line_number is None:  # whole content
-                            line_number = start_line_no + 1
-                        else:
-                            line_number = predefined_line_number
-
-                        lines = match.string.splitlines()
-                        yield filename, test, lines[start_line_no], line_number
+                for match in test.pattern.finditer(content):
+                    line_number = match.string[:match.start()].count('\n') + 1
+                    yield filename, test, match, line_number
 
 
-def parse_diff(output):
-    changed_content = {}
-    current_file = None
-    line_after_number_line = False
-    current_line = None
+def parse_line_numbers(output):
+    """
+    Extract line numbers from ``git diff`` output.
 
-    pattern = re.compile(r"(([+]|[-])\d*[,]?\d*)")
+    Git shows which lines were changed indicating a start line
+    and how many lines were changed from that. If only one
+    line was changed, the output will display only the start line,
+    like this:
+    ``@@ -54 +54 @@ import glob``
+    If more lines were changed from that point, it will show
+    how many after a comma:
+    ``@@ -4,2 +4,2 @@ import glob``
+    It means that line number 4 and the following 2 lines were changed
+    (5 and 6).
 
-    for line in output.splitlines():
-        if line.startswith('diff'):
-            current_file = line[line.rfind(' b/')+3:]
-            line_after_number_line = False
+    :param output:
+    :return: a list of all changed line numbers
+    """
+    line_numbers = []
+    matches = GIT_DIFF_LINE_NUMBERS_PATTERN.finditer(output)
 
-        elif line.startswith('@@'):
-            result = pattern.findall(line)
-            result = result[1][0].replace('+', '').split(',')
-            if result:
-                current_line = int(result[0])
-            line_after_number_line = True
+    for match in matches:
+        start = int(match.group(2))
+        if match.group(4) is not None:
+            end = start + int(match.group(4))
+            line_numbers.extend(range(start, end))
+        else:
+            line_numbers.append(start)
 
-        elif line_after_number_line and line.startswith('+'):
-            if changed_content.get(current_file):
-                changed_content[current_file][current_line] = line[1:]
-            else:
-                changed_content[current_file] = {
-                    current_line: line[1:]
-                }
-            current_line += 1
+    return line_numbers
 
-    return changed_content
+
+def parse_filenames(output):
+    return re.findall(GIT_DIFF_FILENAME_PATTERN, output)
+
+
+def split_diff_content_by_filename(output):
+    """
+    Split the output by filename.
+
+    :param output:
+    :return: Dictionary of filename and its content.
+    """
+    content_by_filename = {}
+    filenames = parse_filenames(output)
+    splited_content = re.split(GIT_DIFF_SPLIT_PATTERN, output)
+    splited_content = filter(lambda x: x != '', splited_content)
+
+    for filename, content in zip(filenames, splited_content):
+        content_by_filename[filename] = content
+    return content_by_filename
 
 
 def print_culprits(matches):
     exit_code = 0
+    _filename = ''
+    lines = []
 
-    for filename, test, match, line_number in matches:
+    for filename, test, match, _ in matches:
         exit_code = test.error if exit_code == 0 else exit_code
 
+        if filename != _filename:
+            _filename = filename
+            lines = match.string.splitlines()
+
+        start_line_no = match.string[:match.start()].count('\n')
+        end_line_no = match.string[:match.end()].count('\n')
         output_format = "{filename}:{line_no} {test.name}"
         print(output_format.format(
-            filename=filename, line_no=line_number, test=test,
+            filename=filename, line_no=start_line_no + 1, test=test,
         ))
         if test.hint:
             print("Hint:", test.hint)
-
-        print("{line_no}>    {code_line}".format(
-            line_no=line_number,
-            code_line=match,
-        ))
+        match_lines = (
+            "{line_no}>    {code_line}".format(
+                line_no=no + start_line_no + 1,
+                code_line=line,
+            )
+            for no, line in enumerate(lines[start_line_no:end_line_no + 1])
+        )
+        print(*match_lines, sep="\n")
 
     return exit_code
 
 
-def filter_paths_from_diff(content, paths):
-    filtered_content = content.copy()
-    for filename in content.keys():
-        if filename not in paths:
-            del filtered_content[filename]
-    return filtered_content
+def match_with_diff_changes(content, matches):
+    """Check matches found on diff output."""
+    for filename, test, match, line_number in matches:
+        if content.get(filename) and line_number in content.get(filename):
+            yield filename, test, match, line_number
 
 
-def content_from_paths(paths):
-    contents = {}
-
-    for filename in paths:
-        try:
-            with open(filename) as fs:
-                contents[filename] = {
-                    None: fs.read()
-                }
-        except (IsADirectoryError, UnicodeDecodeError):
-            pass
-
-    return contents
+def parse_diff(output):
+    """Parse changed content by file."""
+    changed_content = {}
+    for filename, content in split_diff_content_by_filename(output).items():
+        changed_line_numbers = parse_line_numbers(content)
+        changed_content[filename] = changed_line_numbers
+    return changed_content
 
 
 def main():
@@ -155,15 +186,16 @@ def main():
 
     tests = list(load_config(args.config))
 
-    if args.diff:
-        git_command = ['git', 'diff', '-U0', '--cached']
-        output = subprocess.check_output(git_command, encoding='utf-8')
-        content = parse_diff(output)
-        content = filter_paths_from_diff(content, paths)
-    else:
-        content = content_from_paths(paths)
+    matches = chain.from_iterable(
+        lint_file(path, tests)
+        for path in paths
+    )
 
-    matches = lint_file(content, tests)
+    if args.diff:
+        output = sys.stdin.read()
+        changed_content = parse_diff(output)
+        matches = match_with_diff_changes(changed_content, matches)
+
     exit_code = print_culprits(matches)
     exit(exit_code)
 
