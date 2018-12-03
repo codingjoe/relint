@@ -56,7 +56,7 @@ If you prefer linting changed files (cached on git) you can use the option
 This option is useful for pre-commit purposes. Here an example of how to use it
 with `pre-commit`_ framework:
 
-.. code-block:: bash
+.. code-block:: YAML
 
     - repo: local
       hooks:
@@ -99,4 +99,4 @@ Samples
         - "*/management/commands/*.py"
 
 .. _`pre-commit`: https://pre-commit.com/
-.. _`relint-pre-commit.sh`: https://github.com/codingjoe/relint/blob/master/relint-pre-commit.sh
+.. _`relint-pre-commit.sh`: relint-pre-commit.sh

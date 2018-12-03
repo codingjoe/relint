@@ -90,8 +90,11 @@ def parse_line_numbers(output):
     It means that line number 4 and the following 2 lines were changed
     (5 and 6).
 
-    :param output:
-    :return: a list of all changed line numbers
+    Args:
+        output (int): ``git diff`` output.
+
+    Returns:
+        list: All changed line numbers.
     """
     line_numbers = []
     matches = GIT_DIFF_LINE_NUMBERS_PATTERN.finditer(output)
@@ -115,8 +118,11 @@ def split_diff_content_by_filename(output):
     """
     Split the output by filename.
 
-    :param output:
-    :return: Dictionary of filename and its content.
+    Args:
+        output (int): ``git diff`` output.
+
+    Returns:
+        dict: Filename and its content.
     """
     content_by_filename = {}
     filenames = parse_filenames(output)
