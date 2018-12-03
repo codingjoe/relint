@@ -88,10 +88,12 @@ class TestParseGitDiff:
             filename, _, _, line_number = next(paths_from_diff)
 
     def test_parse_one_line_changed_one_file(self):
-        output = 'diff --git a/test_relint.py b/test_relint.py\n' \
-                 '@@ -73 +92 @@ def main():\n' \
-               '-        lint_file(path, tests)\n' \
-               '+        lint_file(path, tests, diff)\n'
+        output = (
+            "diff --git a/test_relint.py b/test_relint.py\n"
+            "@@ -73 +92 @@ def main():\n"
+            "-        lint_file(path, tests)\n"
+            "+        lint_file(path, tests, diff)\n"
+        )
 
         parsed_content = parse_diff(output)
         expected = {'test_relint.py': [92]}
@@ -99,14 +101,16 @@ class TestParseGitDiff:
         assert parsed_content == expected
 
     def test_parse_multiple_line_changed_one_file(self):
-        output = "diff --git a/test_relint.py b/test_relint.py\n" \
-                 "@@ -27,0 +28,6 @@ def parse_args():\n" \
-                 "+    parser.add_argument(\n" \
-                 "+        '--diff',\n" \
-                 "+        '-d',\n" \
-                 "+        action='store_true',\n" \
-                 "+        help='Analyze content from git diff.'\n" \
-                 "+    )\n"
+        output = (
+            "diff --git a/test_relint.py b/test_relint.py\n"
+            "@@ -27,0 +28,6 @@ def parse_args():\n"
+            "+    parser.add_argument(\n"
+            "+        '--diff',\n"
+            "+        '-d',\n"
+            "+        action='store_true',\n"
+            "+        help='Analyze content from git diff.'\n"
+            "+    )\n"
+        )
 
         parsed_content = parse_diff(output)
         expected = {'test_relint.py': [28, 29, 30, 31, 32, 33]}
@@ -114,12 +118,14 @@ class TestParseGitDiff:
         assert parsed_content == expected
 
     def test_parse_complete_diff(self):
-        output = "diff --git a/test_relint.py b/test_relint.py\n" \
-                "index 9c7f392..9bde2ad 100644\n" \
-                "--- a/test_relint.py\n" \
-                "+++ b/test_relint.py\n" \
-                "@@ -1,0 +2 @@\n" \
-                "+# TODO: I'll do it later, promise\n"
+        output = (
+            "diff --git a/test_relint.py b/test_relint.py\n"
+            "index 9c7f392..9bde2ad 100644\n"
+            "--- a/test_relint.py\n"
+            "+++ b/test_relint.py\n"
+            "@@ -1,0 +2 @@\n"
+            "+# TODO: I'll do it later, promise\n"
+        )
 
         parsed_content = parse_diff(output)
         expected = {'test_relint.py': [2]}
