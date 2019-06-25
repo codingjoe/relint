@@ -58,12 +58,10 @@ with `pre-commit`_ framework:
 
 .. code-block:: YAML
 
-    - repo: local
+    - repo: https://github.com/codingjoe/relint
+      rev: 0.5.0
       hooks:
-      - id: relint
-          name: relint
-          entry: bin/relint-pre-commit.sh
-          language: system
+        - id: relint
 
 You can find an example of `relint-pre-commit.sh`_ in this repository.
 
