@@ -1,0 +1,6 @@
+-   id: relint
+    name: relint
+    description: 'Write your own linting rules using regular expressions.'
+    entry: relint
+    language: python
+    types: [python]
