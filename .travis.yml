@@ -5,9 +5,6 @@ python:
 - "3.6"
 - "3.7"
 cache: pip
-branches:
-  only:
-    - master
 install: python setup.py develop
 script: relint **
 deploy:
