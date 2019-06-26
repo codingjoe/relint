@@ -2,8 +2,8 @@ import sys
 
 import pytest
 
-from relint import parse_diff, main, match_with_diff_changes, \
-    parse_line_numbers, parse_filenames, split_diff_content_by_filename
+from relint import (main, match_with_diff_changes, parse_diff, parse_filenames,
+                    parse_line_numbers, split_diff_content_by_filename,)
 
 
 class TestMain:

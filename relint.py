@@ -8,7 +8,6 @@ from itertools import chain
 
 import yaml
 
-
 GIT_DIFF_LINE_NUMBERS_PATTERN = re.compile(
     r"@ -\d+(,\d+)? \+(\d+)(,)?(\d+)? @")
 GIT_DIFF_FILENAME_PATTERN = re.compile(
@@ -48,7 +47,7 @@ def parse_args():
 
 def load_config(path):
     with open(path) as fs:
-        for test in yaml.load(fs):
+        for test in yaml.safe_load(fs):
             filename = test.get('filename', ['*'])
             if not isinstance(filename, list):
                 filename = list(filename)
@@ -95,6 +94,7 @@ def parse_line_numbers(output):
 
     Returns:
         list: All changed line numbers.
+
     """
     line_numbers = []
     matches = GIT_DIFF_LINE_NUMBERS_PATTERN.finditer(output)
@@ -123,6 +123,7 @@ def split_diff_content_by_filename(output):
 
     Returns:
         dict: Filename and its content.
+
     """
     content_by_filename = {}
     filenames = parse_filenames(output)
