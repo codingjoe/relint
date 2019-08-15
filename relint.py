@@ -53,7 +53,7 @@ def load_config(path):
                 filename = list(filename)
             yield Test(
                 name=test['name'],
-                pattern=re.compile(test['pattern']),
+                pattern=re.compile(test['pattern'], re.MULTILINE),
                 hint=test.get('hint'),
                 filename=filename,
                 error=test.get('error', True)
