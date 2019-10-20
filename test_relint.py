@@ -3,7 +3,7 @@ import sys
 import pytest
 
 from relint import (main, match_with_diff_changes, parse_diff, parse_filenames,
-                    parse_line_numbers, split_diff_content_by_filename,)
+                    parse_line_numbers, split_diff_content_by_filename, passes_glob_filters)
 
 
 class TestMain:
@@ -131,3 +131,47 @@ class TestParseGitDiff:
         expected = {'test_relint.py': [2]}
 
         assert parsed_content == expected
+
+class TestGlobFilters:
+    @pytest.mark.parametrize(
+        "filters, filenames, expected_included",
+        [
+            pytest.param(
+                ["*.py", "!run.py"],
+                ["package/__init__.py", "package/content.py", "run.py", "tests/test_package.py"],
+                ["package/__init__.py", "package/content.py", "tests/test_package.py"],
+                id="explicitly exclude single file"
+            ),
+            pytest.param(
+                ["!run.py", "*.py"],
+                ["package/__init__.py", "package/content.py", "run.py", "tests/test_package.py"],
+                ["package/__init__.py", "package/content.py", "run.py", "tests/test_package.py"],
+                id="override exclude pattern by a later glob"
+            ),
+            pytest.param(
+                ["*.py", "!package/*", "package/content.py"],
+                ["package/__init__.py", "package/content.py", "run.py", "tests/test_package.py"],
+                ["package/content.py", "run.py", "tests/test_package.py"],
+                id="exclude whole directory except one file"
+            ),
+            pytest.param(
+                [r"\!*.py"],
+                ["!important!.py", "not_important.py"],
+                ["!important!.py"],
+                id="include literal exclamation point"
+            ),
+            pytest.param(
+                ["*", "!!*.py"],
+                ["!important!.py", "not_important.py"],
+                ["not_important.py"],
+                id="exclude literal exclamation point"
+            )
+        ]
+    )
+    def test_glob_patterns(self, filters, filenames, expected_included):
+        actual_included = [
+            filename for filename in filenames
+            if passes_glob_filters(filename, filters)
+        ]
+
+        assert expected_included == actual_included

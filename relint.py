@@ -1,10 +1,10 @@
 import argparse
-import fnmatch
 import glob
 import re
 import sys
 from collections import namedtuple
 from itertools import chain
+from fnmatch import fnmatch
 
 import yaml
 
@@ -60,6 +60,27 @@ def load_config(path):
             )
 
 
+def passes_glob_filters(filename, glob_filters):
+    r"""Apply include and exclude glob patterns to filename.
+
+    An exclude pattern starts with a `!`.
+    A file starting with with a literal `!` can be included using the escape character `\!`.
+    """
+    passes = False
+    for glob_ in glob_filters:
+        if glob_.startswith(r"\!"):
+            if fnmatch(filename, glob_[1:]):
+                passes = True
+        elif not glob_.startswith("!"):
+            if fnmatch(filename, glob_):
+                passes = True
+        else:
+            if fnmatch(filename, glob_[1:]):
+                passes = False
+
+    return passes
+
+
 def lint_file(filename, tests):
     try:
         with open(filename) as fs:
@@ -68,7 +89,7 @@ def lint_file(filename, tests):
         pass
     else:
         for test in tests:
-            if any(fnmatch.fnmatch(filename, fp) for fp in test.filename):
+            if passes_glob_filters(filename, glob_filters=test.filename):
                 for match in test.pattern.finditer(content):
                     line_number = match.string[:match.start()].count('\n') + 1
                     yield filename, test, match, line_number

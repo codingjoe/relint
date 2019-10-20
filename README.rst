@@ -34,6 +34,46 @@ expressions can match multiple lines and include newlines.
 You can narrow down the file types your linter should be working with, by
 providing the optional ``filename`` attribute. The default is ``*``.
 
+The ``filename`` list can also accept exclude patterns, prefixed by ``!``.
+For example, to include all python files except ``run.py`` you may use:
+
+.. code-block:: YAML
+
+    - name: No ToDo
+      pattern: "[tT][oO][dD][oO]"
+      hint: Get it done right away!
+      filename:
+        - "*.py"
+        - "!run.py"
+      error: false
+
+Note that the patterns are processed top to bottom, and the order matters:
+
+.. code-block:: YAML
+
+    - name: No ToDo
+      pattern: "[tT][oO][dD][oO]"
+      hint: Get it done right away!
+      filename:
+        - "!run.py"
+        - "*.py"  # the exclude pattern above is overriden by this broader include pattern
+      error: false
+
+To include a filenames which starts with a literal ``!`` (eg. ``!important!.txt``),
+use an escape sequence like so:
+
+.. code-block:: YAML
+
+    - name: No ToDo
+      pattern: "[tT][oO][dD][oO]"
+      hint: Get it done right away!
+      filename:
+        - "!*.txt"  # exclude all txt files
+        - "\\!important!.txt"  # include the !important!.txt file despite the previous exclude pattern
+        - "*.py"  # include all python files
+        - "!!important_but_excluded!.py"  # exclude the !important_but_excluded!.py file despite the previous include pattern
+      error: false
+
 The optional `error` attribute allows you to only show a warning but not exit
 with a bad (non-zero) exit code. The default is `true`.
 
