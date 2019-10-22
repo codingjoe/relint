@@ -8,8 +8,9 @@ from relint import (main, match_with_diff_changes, parse_diff, parse_filenames,
 
 
 class TestMain:
-    def test_main_execution(self, mocker):
-        mocker.patch.object(sys, 'argv', ['relint.py', 'test_relint.py'])
+    @pytest.mark.parametrize('filename', ['test_relint.py', '[a-b].py', '[b-a].py'])
+    def test_main_execution(self, mocker, filename):
+        mocker.patch.object(sys, 'argv', ['relint.py', filename])
 
         with pytest.raises(SystemExit) as exc_info:
             main()

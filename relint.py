@@ -188,7 +188,7 @@ def main():
     paths = {
         path
         for file in args.files
-        for path in glob.iglob(file, recursive=True)
+        for path in glob.iglob(glob.escape(file), recursive=True)
     }
 
     tests = list(load_config(args.config))
