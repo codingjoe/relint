@@ -1,3 +1,4 @@
+import io
 import sys
 
 import pytest
@@ -7,18 +8,29 @@ from relint import (main, match_with_diff_changes, parse_diff, parse_filenames,
 
 
 class TestMain:
-    def test_main_execution(self):
-        sys.argv.extend(['relint.py', 'test_relint.py'])
+    def test_main_execution(self, mocker):
+        mocker.patch.object(sys, 'argv', ['relint.py', 'test_relint.py'])
+
         with pytest.raises(SystemExit) as exc_info:
             main()
 
         assert exc_info.value.code == 0
 
-    def test_main_execution_with_diff(self, capsys):
-        sys.argv.extend(['relint.py', 'test_relint.py', '--diff'])
-        sys.stdin = open('test.diff')
-        with pytest.raises(SystemExit) as exc_info:
-            main()
+    def test_main_execution_with_diff(self, capsys, mocker, tmpdir):
+        tmpdir.join('.relint.yml').write(open('.relint.yml').read())
+        tmpdir.join('dummy.py').write("# TODO do something")
+        diff = io.StringIO(
+            "diff --git a/dummy.py b/dummy.py\n"
+            "@@ -0,0 +1 @@\n"
+            "+# TODO do something"
+        )
+
+        mocker.patch.object(sys, 'argv', ['relint.py', 'dummy.py', '--diff'])
+        mocker.patch.object(sys, 'stdin', diff)
+
+        with tmpdir.as_cwd():
+            with pytest.raises(SystemExit) as exc_info:
+                main()
 
         expected_message = 'Hint: Get it done right away!'
 
