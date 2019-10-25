@@ -3,6 +3,7 @@ import fnmatch
 import glob
 import re
 import sys
+import warnings
 from collections import namedtuple
 from itertools import chain
 
@@ -16,10 +17,19 @@ GIT_DIFF_SPLIT_PATTERN = re.compile(
     r"(?:\n|^)diff --git a\/.* b\/.*(?:\n|$)")
 
 
-Test = namedtuple('Test', ('name', 'pattern', 'hint', 'filename', 'error'))
+Test = namedtuple(
+    'Test', (
+        'name',
+        'pattern',
+        'hint',
+        'file_pattern',
+        'filename',
+        'error',
+    )
+)
 
 
-def parse_args():
+def parse_args(args):
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'files',
@@ -42,19 +52,29 @@ def parse_args():
         action='store_true',
         help='Analyze content from git diff.'
     )
-    return parser.parse_args()
+    return parser.parse_args(args=args)
 
 
 def load_config(path):
     with open(path) as fs:
         for test in yaml.safe_load(fs):
-            filename = test.get('filename', ['*'])
-            if not isinstance(filename, list):
-                filename = list(filename)
+            filename = test.get('filename')
+            if filename:
+                warnings.warn(
+                    "The glob style 'filename' configuration attribute has been"
+                    " deprecated in favor of a new RegEx based 'filePattern' attribute."
+                    " 'filename' support will be removed in relint version 2.0.",
+                    DeprecationWarning
+                )
+                if not isinstance(filename, list):
+                    filename = list(filename)
+            file_pattern = test.get('filePattern', '.*')
+            file_pattern = re.compile(file_pattern)
             yield Test(
                 name=test['name'],
                 pattern=re.compile(test['pattern'], re.MULTILINE),
                 hint=test.get('hint'),
+                file_pattern=file_pattern,
                 filename=filename,
                 error=test.get('error', True)
             )
@@ -68,10 +88,16 @@ def lint_file(filename, tests):
         pass
     else:
         for test in tests:
-            if any(fnmatch.fnmatch(filename, fp) for fp in test.filename):
-                for match in test.pattern.finditer(content):
-                    line_number = match.string[:match.start()].count('\n') + 1
-                    yield filename, test, match, line_number
+            if test.filename:
+                if any(fnmatch.fnmatch(filename, fp) for fp in test.filename):
+                    for match in test.pattern.finditer(content):
+                        line_number = match.string[:match.start()].count('\n') + 1
+                        yield filename, test, match, line_number
+            else:
+                if test.file_pattern.match(filename):
+                    for match in test.pattern.finditer(content):
+                        line_number = match.string[:match.start()].count('\n') + 1
+                        yield filename, test, match, line_number
 
 
 def parse_line_numbers(output):
@@ -183,8 +209,8 @@ def parse_diff(output):
     return changed_content
 
 
-def main():
-    args = parse_args()
+def main(args=sys.argv):
+    args = parse_args(args)
     paths = {
         path
         for file in args.files
@@ -205,6 +231,10 @@ def main():
 
     exit_code = print_culprits(matches)
     exit(exit_code)
+
+
+if not sys.warnoptions:
+    warnings.simplefilter("default")
 
 
 if __name__ == '__main__':

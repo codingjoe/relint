@@ -1,5 +1,6 @@
 import io
 import sys
+import warnings
 
 import pytest
 
@@ -10,10 +11,8 @@ from relint import (main, match_with_diff_changes, parse_diff, parse_filenames,
 class TestMain:
     @pytest.mark.parametrize('filename', ['test_relint.py', '[a-b].py', '[b-a].py'])
     def test_main_execution(self, mocker, filename):
-        mocker.patch.object(sys, 'argv', ['relint.py', filename])
-
         with pytest.raises(SystemExit) as exc_info:
-            main()
+            main(['relint.py', filename])
 
         assert exc_info.value.code == 0
 
@@ -26,12 +25,11 @@ class TestMain:
             "+# TODO do something"
         )
 
-        mocker.patch.object(sys, 'argv', ['relint.py', 'dummy.py', '--diff'])
         mocker.patch.object(sys, 'stdin', diff)
 
         with tmpdir.as_cwd():
             with pytest.raises(SystemExit) as exc_info:
-                main()
+                main(['relint.py', 'dummy.py', '--diff'])
 
         expected_message = 'Hint: Get it done right away!'
 
@@ -144,3 +142,19 @@ class TestParseGitDiff:
         expected = {'test_relint.py': [2]}
 
         assert parsed_content == expected
+
+    def test_filename_warning(self, tmpdir):
+        tmpdir.join('.relint.yml').write(
+            '- name: old\n'
+            '  pattern: ".*"\n'
+            '  filename: "*.py"\n'
+        )
+
+        with tmpdir.as_cwd():
+            with warnings.catch_warnings(record=True) as w:
+                with pytest.raises(SystemExit) as exc_info:
+                    main(['**'])
+
+        assert exc_info.value.code == 0
+        assert issubclass(w[-1].category, DeprecationWarning)
+        assert "'filename'" in str(w[-1].message)

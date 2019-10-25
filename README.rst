@@ -22,9 +22,7 @@ You can write your own regular rules in a YAML file, like so:
     - name: No ToDo
       pattern: "[tT][oO][dD][oO]"
       hint: Get it done right away!
-      filename:
-        - "*.py"
-        - "*.js"
+      filePatter: ".*\.(py|js)"
       error: false
 
 The ``name`` attribute is the name of your linter, the ``pattern`` can be
@@ -32,7 +30,7 @@ any regular expression. The linter does lint entire files, therefore your
 expressions can match multiple lines and include newlines.
 
 You can narrow down the file types your linter should be working with, by
-providing the optional ``filename`` attribute. The default is ``*``.
+providing the optional ``filePattern`` attribute. The default is ``.*``.
 
 The optional `error` attribute allows you to only show a warning but not exit
 with a bad (non-zero) exit code. The default is `true`.
@@ -59,7 +57,7 @@ with `pre-commit`_ framework:
 .. code-block:: YAML
 
     - repo: https://github.com/codingjoe/relint
-      rev: 0.5.0
+      rev: 1.2.0
       hooks:
         - id: relint
 
@@ -73,28 +71,22 @@ Samples
     - name: db fixtures
       pattern: "def test_[^(]+\\([^)]*(customer|product)(, |\\))"
       hint: Use model_mommy recipies instead of db fixtures.
-      filename:
-        - "**/test_*.py"
+      filePattern: "test_.*\.py"
 
     - name: model_mommy recipies
       pattern: "mommy\\.make\\("
       hint: Please use mommy.make_recipe instead of mommy.make.
-      filename:
-        - "**/test_*.py"
-        - "conftest.py"
-        - "**/conftest.py"
+      filePattern: "(test_.*|conftest)\.py"
 
     - name: the database is lava
       pattern: "@pytest.fixture.*\\n[ ]*def [^(]+\\([^)]*(db|transactional_db)(, |\\))"
       hint: Please do not create db fixtures but model_mommy recipies instead.
-      filename:
-        - "*.py"
+      filePattern: ".*\.py"
 
     - name: No logger in management commands
       pattern: "(logger|import logging)"
       hint: "Please write to self.stdout or self.stderr in favor of using a logger."
-      filename:
-        - "*/management/commands/*.py"
+      filePattern: "\/management\/commands\/.*\.py"
 
 .. _`pre-commit`: https://pre-commit.com/
 .. _`relint-pre-commit.sh`: relint-pre-commit.sh
