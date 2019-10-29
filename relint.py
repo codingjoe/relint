@@ -234,7 +234,7 @@ def main(args=sys.argv):
 
 
 if not sys.warnoptions:
-    warnings.simplefilter("default")
+    warnings.simplefilter('default')
 
 
 if __name__ == '__main__':
