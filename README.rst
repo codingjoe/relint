@@ -20,9 +20,9 @@ You can write your own regular rules in a YAML file, like so:
 .. code-block:: YAML
 
     - name: No ToDo
-      pattern: "[tT][oO][dD][oO]"
+      pattern: '[tT][oO][dD][oO]'
       hint: Get it done right away!
-      filePatter: ".*\.(py|js)"
+      filePattern: .*\.(py|js)
       error: false
 
 The ``name`` attribute is the name of your linter, the ``pattern`` can be
@@ -54,7 +54,7 @@ If you prefer linting changed files (cached on git) you can use the option
 This option is useful for pre-commit purposes. Here an example of how to use it
 with `pre-commit`_ framework:
 
-.. code-block:: YAML
+.. code-block:: yaml
 
     - repo: https://github.com/codingjoe/relint
       rev: 1.2.0
@@ -69,24 +69,24 @@ Samples
 .. code-block:: yaml
 
     - name: db fixtures
-      pattern: "def test_[^(]+\\([^)]*(customer|product)(, |\\))"
+      pattern: 'def test_[^(]+\([^)]*(customer|product)(, |\))'
       hint: Use model_mommy recipies instead of db fixtures.
-      filePattern: "test_.*\.py"
+      filePattern: test_.*\.py
 
     - name: model_mommy recipies
-      pattern: "mommy\\.make\\("
+      pattern: mommy\.make\(
       hint: Please use mommy.make_recipe instead of mommy.make.
-      filePattern: "(test_.*|conftest)\.py"
+      filePattern: (test_.*|conftest)\.py
 
     - name: the database is lava
-      pattern: "@pytest.fixture.*\\n[ ]*def [^(]+\\([^)]*(db|transactional_db)(, |\\))"
+      pattern: '@pytest.fixture.*\n[ ]*def [^(]+\([^)]*(db|transactional_db)(, |\))'
       hint: Please do not create db fixtures but model_mommy recipies instead.
-      filePattern: ".*\.py"
+      filePattern: .*\.py
 
     - name: No logger in management commands
-      pattern: "(logger|import logging)"
-      hint: "Please write to self.stdout or self.stderr in favor of using a logger."
-      filePattern: "\/management\/commands\/.*\.py"
+      pattern: (logger|import logging)
+      hint: Please write to self.stdout or self.stderr in favor of using a logger.
+      filePattern: \/management\/commands\/.*\.py
 
 .. _`pre-commit`: https://pre-commit.com/
 .. _`relint-pre-commit.sh`: relint-pre-commit.sh
