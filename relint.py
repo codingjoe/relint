@@ -209,7 +209,7 @@ def parse_diff(output):
     return changed_content
 
 
-def main(args=sys.argv):
+def main(args=sys.argv[1:]):
     args = parse_args(args)
     paths = {
         path
