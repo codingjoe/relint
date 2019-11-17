@@ -70,17 +70,17 @@ Samples
 
     - name: db fixtures
       pattern: 'def test_[^(]+\([^)]*(customer|product)(, |\))'
-      hint: Use model_mommy recipies instead of db fixtures.
+      hint: Use model_bakery recipies instead of db fixtures.
       filePattern: test_.*\.py
 
-    - name: model_mommy recipies
-      pattern: mommy\.make\(
-      hint: Please use mommy.make_recipe instead of mommy.make.
+    - name: model_bakery recipies
+      pattern: baker\.make\(
+      hint: Please use baker.make_recipe instead of baker.make.
       filePattern: (test_.*|conftest)\.py
 
     - name: the database is lava
       pattern: '@pytest.fixture.*\n[ ]*def [^(]+\([^)]*(db|transactional_db)(, |\))'
-      hint: Please do not create db fixtures but model_mommy recipies instead.
+      hint: Please do not create db fixtures but model_bakery recipies instead.
       filePattern: .*\.py
 
     - name: No logger in management commands
