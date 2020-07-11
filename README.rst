@@ -41,7 +41,7 @@ The following command will lint all files in the current directory:
 
     relint -c .relint.yml **
 
-The default configuration file name is `.relint.yaml` within your working
+The default configuration file name is `.relint.yml` within your working
 directory, but you can provide any YAML or JSON file.
 
 If you prefer linting changed files (cached on git) you can use the option
