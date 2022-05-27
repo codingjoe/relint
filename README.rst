@@ -20,7 +20,7 @@ You can write your own regular rules in a YAML file, like so:
 .. code-block:: YAML
 
     - name: No ToDo
-      pattern: '[tT][oO][dD][oO]'
+      pattern: '(?i)todo' # case insensitive flag
       hint: Get it done right away!
       filePattern: .*\.(py|js)
       error: false
