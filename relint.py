@@ -52,10 +52,16 @@ def parse_args(args):
         action='store_true',
         help='Analyze content from git diff.'
     )
+    parser.add_argument(
+        '-W',
+        '--fail-warnings',
+        action='store_true',
+        help='Fail for warnings.'
+    )
     return parser.parse_args(args=args)
 
 
-def load_config(path):
+def load_config(path, fail_warnings):
     with open(path) as fs:
         for test in yaml.safe_load(fs):
             filename = test.get('filename')
@@ -76,7 +82,7 @@ def load_config(path):
                 hint=test.get('hint'),
                 file_pattern=file_pattern,
                 filename=filename,
-                error=test.get('error', True)
+                error=test.get('error', True) or fail_warnings
             )
 
 
@@ -217,7 +223,7 @@ def main(args=sys.argv[1:]):
         for path in glob.iglob(glob.escape(file), recursive=True)
     }
 
-    tests = list(load_config(args.config))
+    tests = list(load_config(args.config, args.fail_warnings))
 
     matches = chain.from_iterable(
         lint_file(path, tests)
