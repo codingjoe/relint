@@ -16,6 +16,13 @@ class TestMain:
 
         assert exc_info.value.code == 0
 
+    @pytest.mark.parametrize('filename', ['test_relint.py', '[a-b].py', '[b-a].py'])
+    def test_main_execution(self, mocker, filename):
+        with pytest.raises(SystemExit) as exc_info:
+            main(['relint.py', '-W', filename])
+
+        assert exc_info.value.code != 0
+
     def test_main_execution_with_diff(self, capsys, mocker, tmpdir):
         tmpdir.join('.relint.yml').write(open('.relint.yml').read())
         tmpdir.join('dummy.py').write("# TODO do something")
