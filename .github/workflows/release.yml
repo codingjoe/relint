@@ -17,5 +17,5 @@ jobs:
     - run: python -m build --sdist --wheel
     - run: python -m twine upload dist/*
       env:
-        TWINE_USERNAME: ${{ secrets.TWINE_USERNAME }}
+        TWINE_USERNAME: __token__
         TWINE_PASSWORD: ${{ secrets.TWINE_PASSWORD }}
