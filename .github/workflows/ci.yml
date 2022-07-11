@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+
+jobs:
+
+  PyTest:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.8"
+          - "3.9"
+          - "3.10"
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - run: python -m pip install --upgrade pip setuptools codecov
+    - run: python -m pip install -e .[test]
+    - run: relint **
+    - run: py.test --cov=.
+    - uses: codecov/codecov-action@v3
