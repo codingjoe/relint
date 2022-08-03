@@ -17,6 +17,14 @@ GIT_DIFF_SPLIT_PATTERN = re.compile(
     r"(?:\n|^)diff --git a\/.* b\/.*(?:\n|$)")
 
 
+class RelintError(Exception):
+    pass
+
+
+class ConfigError(ValueError, RelintError):
+    pass
+
+
 Test = namedtuple(
     'Test', (
         'name',
@@ -63,27 +71,36 @@ def parse_args(args):
 
 def load_config(path, fail_warnings):
     with open(path) as fs:
-        for test in yaml.safe_load(fs):
-            filename = test.get('filename')
-            if filename:
-                warnings.warn(
-                    "The glob style 'filename' configuration attribute has been"
-                    " deprecated in favor of a new RegEx based 'filePattern' attribute."
-                    " 'filename' support will be removed in relint version 2.0.",
-                    DeprecationWarning
+        try:
+            for test in yaml.safe_load(fs):
+                filename = test.get('filename')
+                if filename:
+                    warnings.warn(
+                        "The glob style 'filename' configuration attribute has been"
+                        " deprecated in favor of a new RegEx based 'filePattern' attribute."
+                        " 'filename' support will be removed in relint version 2.0.",
+                        DeprecationWarning
+                    )
+                    if not isinstance(filename, list):
+                        filename = list(filename)
+                file_pattern = test.get('filePattern', '.*')
+                file_pattern = re.compile(file_pattern)
+                yield Test(
+                    name=test['name'],
+                    pattern=re.compile(test['pattern'], re.MULTILINE),
+                    hint=test.get('hint'),
+                    file_pattern=file_pattern,
+                    filename=filename,
+                    error=test.get('error', True) or fail_warnings
                 )
-                if not isinstance(filename, list):
-                    filename = list(filename)
-            file_pattern = test.get('filePattern', '.*')
-            file_pattern = re.compile(file_pattern)
-            yield Test(
-                name=test['name'],
-                pattern=re.compile(test['pattern'], re.MULTILINE),
-                hint=test.get('hint'),
-                file_pattern=file_pattern,
-                filename=filename,
-                error=test.get('error', True) or fail_warnings
-            )
+        except yaml.YAMLError as e:
+            raise ConfigError("Error parsing your relint config file.") from e
+        except TypeError:
+            warnings.warn("Your relint config is empty, no tests were executed.", UserWarning)
+        except (AttributeError, ValueError) as e:
+            raise ConfigError(
+                "Your relint config is not a valid YAML list of relint tests."
+            ) from e
 
 
 def lint_file(filename, tests):

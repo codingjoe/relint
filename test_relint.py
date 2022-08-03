@@ -3,9 +3,10 @@ import sys
 import warnings
 
 import pytest
+import yaml
 
 from relint import (main, match_with_diff_changes, parse_diff, parse_filenames,
-                    parse_line_numbers, split_diff_content_by_filename,)
+                    parse_line_numbers, split_diff_content_by_filename, ConfigError, )
 
 
 class TestMain:
@@ -165,3 +166,33 @@ class TestParseGitDiff:
         assert exc_info.value.code == 0
         assert issubclass(w[-1].category, DeprecationWarning)
         assert "'filename'" in str(w[-1].message)
+
+    def test_empty_config_file(self, tmpdir):
+        tmpdir.join('.relint.yml').write('')
+
+        with tmpdir.as_cwd():
+            with warnings.catch_warnings(record=True) as w:
+                with pytest.raises(SystemExit) as exc_info:
+                    main(['**'])
+
+        assert exc_info.value.code == 0
+        assert issubclass(w[-1].category, UserWarning)
+        assert "Your relint config is empty, no tests were executed." in str(w[-1].message)
+
+    def test_malformed_config_file(self, tmpdir):
+        tmpdir.join('.relint.yml').write('test:')
+
+        with tmpdir.as_cwd():
+            with pytest.raises(ConfigError) as exc_info:
+                main(['**'])
+
+        assert "Your relint config is not a valid YAML list of relint tests." in str(exc_info.value)
+
+    def test_corrupt_config_file(self, tmpdir):
+        tmpdir.join('.relint.yml').write(b'\x00')
+
+        with tmpdir.as_cwd():
+            with pytest.raises(ConfigError) as exc_info:
+                main(['**'])
+
+        assert 'Error parsing your relint config file.' in str(exc_info.value)
