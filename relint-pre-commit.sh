@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 set -eo pipefail
-git diff --staged | relint --diff -W "${@:1}"
+git diff --staged --unified=0 | relint --diff -W "${@:1}"
