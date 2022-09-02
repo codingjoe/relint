@@ -49,7 +49,7 @@ If you prefer linting changed files (cached on git) you can use the option
 
 .. code-block:: bash
 
-    git diff | relint my_file.py --diff
+    git diff --unified=0 | relint my_file.py --diff
 
 This option is useful for pre-commit purposes. Here an example of how to use it
 with `pre-commit`_ framework:
