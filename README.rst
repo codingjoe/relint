@@ -55,9 +55,8 @@ If you prefer linting changed files (cached on git) you can use the option
 pre-commit
 ^^^^^^^^^^
 
-You can automate the linting process by adding a **pre-commit** hook to your
+You can automate the linting process by adding a `pre-commit`_ hook to your
 project. Add the following entry to your ``.pre-commit-config.yaml``:
-with `pre-commit`_ framework:
 
 .. code-block:: yaml
 
