@@ -73,10 +73,10 @@ Samples
 
     - name: db fixtures
       pattern: 'def test_[^(]+\([^)]*(customer|product)(, |\))'
-      hint: Use model_bakery recipies instead of db fixtures.
+      hint: Use model_bakery recipes instead of db fixtures.
       filePattern: test_.*\.py
 
-    - name: model_bakery recipies
+    - name: model_bakery recipes
       pattern: baker\.make\(
       hint: Please use baker.make_recipe instead of baker.make.
       filePattern: (test_.*|conftest)\.py
