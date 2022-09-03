@@ -1,4 +1,6 @@
 import io
+import os
+import subprocess
 import sys
 import warnings
 
@@ -196,3 +198,14 @@ class TestParseGitDiff:
                 main(['**'])
 
         assert 'Error parsing your relint config file.' in str(exc_info.value)
+
+    def test_git_diff(self, capsys, tmpdir):
+        tmpdir.join('.relint.yml').write(open('.relint.yml').read())
+        tmpdir.join('dummy.py').write("# TODO do something")
+        subprocess.check_call(['git', 'init'], cwd=tmpdir.strpath)  # nosec
+
+        with tmpdir.as_cwd():
+            with pytest.raises(SystemExit) as exc_info:
+                main(['relint.py', 'dummy.py', '--git-diff'])
+
+        assert '0' in str(exc_info.value)

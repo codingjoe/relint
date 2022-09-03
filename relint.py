@@ -2,6 +2,7 @@ import argparse
 import fnmatch
 import glob
 import re
+import subprocess
 import sys
 import warnings
 from collections import namedtuple
@@ -58,7 +59,12 @@ def parse_args(args):
         '-d',
         '--diff',
         action='store_true',
-        help='Analyze content from git diff.'
+        help='Analyze content from a diff.'
+    )
+    parser.add_argument(
+        '--git-diff',
+        action='store_true',
+        help='Analyze content from git diff directly by calling `git diff --staged`.'
     )
     parser.add_argument(
         '-W',
@@ -249,6 +255,12 @@ def main(args=sys.argv[1:]):
 
     if args.diff:
         output = sys.stdin.read()
+    elif args.git_diff:
+        output = subprocess.check_output(
+            ['git', 'diff', '--staged', '--unified=0', '--no-color'],
+            universal_newlines=True,
+        )
+    if args.diff or args.git_diff:
         changed_content = parse_diff(output)
         matches = match_with_diff_changes(changed_content, matches)
 

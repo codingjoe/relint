@@ -32,8 +32,8 @@ expressions can match multiple lines and include newlines.
 You can narrow down the file types your linter should be working with, by
 providing the optional ``filePattern`` attribute. The default is ``.*``.
 
-The optional `error` attribute allows you to only show a warning but not exit
-with a bad (non-zero) exit code. The default is `true`.
+The optional ``error`` attribute allows you to only show a warning but not exit
+with a bad (non-zero) exit code. The default is ``true``.
 
 The following command will lint all files in the current directory:
 
@@ -41,27 +41,31 @@ The following command will lint all files in the current directory:
 
     relint -c .relint.yml **
 
-The default configuration file name is `.relint.yml` within your working
+The default configuration file name is ``.relint.yml`` within your working
 directory, but you can provide any YAML or JSON file.
 
 If you prefer linting changed files (cached on git) you can use the option
-`--diff [-d]`:
+``--diff [-d]`` or ``--git-diff [-g]``:
 
 .. code-block:: bash
 
     git diff --unified=0 | relint my_file.py --diff
 
-This option is useful for pre-commit purposes. Here an example of how to use it
+
+pre-commit
+^^^^^^^^^^
+
+You can automate the linting process by adding a **pre-commit** hook to your
+project. Add the following entry to your ``.pre-commit-config.yaml``:
 with `pre-commit`_ framework:
 
 .. code-block:: yaml
 
     - repo: https://github.com/codingjoe/relint
-      rev: 1.2.0
+      rev: 1.4.0
       hooks:
         - id: relint
-
-You can find an example of `relint-pre-commit.sh`_ in this repository.
+          args: [-W]  # optional, if you want to fail on warnings during commit
 
 Samples
 -------
@@ -80,7 +84,7 @@ Samples
 
     - name: the database is lava
       pattern: '@pytest.fixture.*\n[ ]*def [^(]+\([^)]*(db|transactional_db)(, |\))'
-      hint: Please do not create db fixtures but model_bakery recipies instead.
+      hint: Please do not create db fixtures but model_bakery recipes instead.
       filePattern: .*\.py
 
     - name: No logger in management commands
