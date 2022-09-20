@@ -28,6 +28,23 @@ class TestMain:
 
         assert exc_info.value.code == 0
 
+    def test_main_execution_with_custom_template(self, capsys, tmpdir, fixture_dir):
+        with (fixture_dir / ".relint.yml").open() as fs:
+            config = fs.read()
+        tmpdir.join(".relint.yml").write(config)
+        tmpdir.join("dummy.py").write("# TODO do something")
+
+        with tmpdir.as_cwd():
+            with pytest.raises(SystemExit) as exc_info:
+                template = "😵{filename}:{line_no} | {test.name} \n {match}"
+                main(["relint.py", "dummy.py", "--msg-template", template])
+
+        expected_message = "😵dummy.py:1 | No ToDo \n" " 1>    # TODO do something\n"
+
+        out, _ = capsys.readouterr()
+        assert expected_message == out
+        assert exc_info.value.code == 0
+
     @pytest.mark.parametrize("filename", ["test_parse.py", "[a-b].py", "[b-a].py"])
     def test_raise_for_warnings(self, filename, tmpdir, fixture_dir):
         with (fixture_dir / ".relint.yml").open() as fs:

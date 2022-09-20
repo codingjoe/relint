@@ -42,6 +42,14 @@ def parse_args(args):
     parser.add_argument(
         "-W", "--fail-warnings", action="store_true", help="Fail for warnings."
     )
+    parser.add_argument(
+        "--msg-template",
+        metavar="MSG_TEMPLATE",
+        type=str,
+        default="{filename}:{line_no} {test.name}\nHint: {test.hint}\n{match}",
+        help="Template used to display messages. "
+        "Default: {filename}:{line_no} {test.name}\nHint: {test.hint}\n{match}",
+    )
     return parser.parse_args(args=args)
 
 
@@ -73,7 +81,7 @@ def main(args=sys.argv[1:]):
         changed_content = parse_diff(output)
         matches = match_with_diff_changes(changed_content, matches)
 
-    exit_code = print_culprits(matches)
+    exit_code = print_culprits(matches, args.msg_template)
     exit(exit_code)
 
 
