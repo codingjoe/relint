@@ -26,7 +26,8 @@ class TestMain:
 
         assert exc_info.value.code != 0
 
-    def test_main_execution_with_diff(self, capsys, mocker, tmpdir):
+    @pytest.mark.parametrize('is_verbose', [True, False])
+    def test_main_execution_with_diff(self, capsys, mocker, tmpdir, is_verbose):
         tmpdir.join('.relint.yml').write(open('.relint.yml').read())
         tmpdir.join('dummy.py').write("# TODO do something")
         diff = io.StringIO(
@@ -39,12 +40,15 @@ class TestMain:
 
         with tmpdir.as_cwd():
             with pytest.raises(SystemExit) as exc_info:
-                main(['relint.py', 'dummy.py', '--diff'])
+                params = ['relint.py', 'dummy.py', '--diff']
+                if is_verbose:
+                    params.append('--verbose')
+                main(params)
 
         expected_message = 'Hint: Get it done right away!'
 
         out, _ = capsys.readouterr()
-        assert expected_message in out
+        assert (expected_message in out) == is_verbose
         assert exc_info.value.code == 0
 
 

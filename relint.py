@@ -72,6 +72,12 @@ def parse_args(args):
         action='store_true',
         help='Fail for warnings.'
     )
+    parser.add_argument(
+        '-v',
+        '--verbose',
+        action='store_true',
+        help='Verbose output.'
+    )
     return parser.parse_args(args=args)
 
 
@@ -190,7 +196,7 @@ def split_diff_content_by_filename(output):
     return content_by_filename
 
 
-def print_culprits(matches):
+def print_culprits(matches, verbose):
     exit_code = 0
     _filename = ''
     lines = []
@@ -208,7 +214,7 @@ def print_culprits(matches):
         print(output_format.format(
             filename=filename, line_no=start_line_no + 1, test=test,
         ))
-        if test.hint:
+        if test.hint and verbose:
             print("Hint:", test.hint)
         match_lines = (
             "{line_no}>    {code_line}".format(
@@ -264,7 +270,7 @@ def main(args=sys.argv[1:]):
         changed_content = parse_diff(output)
         matches = match_with_diff_changes(changed_content, matches)
 
-    exit_code = print_culprits(matches)
+    exit_code = print_culprits(matches, verbose=args.verbose)
     exit(exit_code)
 
 
