@@ -41,14 +41,14 @@ class TestParseGitDiff:
     def test_split_diff_content(self, fixture_dir):
         with (fixture_dir / "test.diff").open() as fs:
             output = fs.read()
-        splited = split_diff_content_by_filename(output)
+        split = split_diff_content_by_filename(output)
 
-        assert isinstance(splited, dict)
-        assert len(splited) == 3
+        assert isinstance(split, dict)
+        assert len(split) == 3
 
     def test_return_empty_list_if_can_not_split_diff_content(self):
-        splited = split_diff_content_by_filename("")
-        assert splited == {}
+        split = split_diff_content_by_filename("")
+        assert split == {}
 
     def test_return_empty_dict_when_diff_returns_empty(self):
         parsed_content = parse_diff("")

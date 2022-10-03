@@ -8,7 +8,7 @@
 
 [![PyPi Version](https://img.shields.io/pypi/v/relint.svg)](https://pypi.python.org/pypi/relint/)
 [![Test Coverage](https://codecov.io/gh/codingjoe/relint/branch/main/graph/badge.svg)](https://codecov.io/gh/codingjoe/relint)
-[![GitHub License](https://img.shields.io/github/license/codingjoe/relint)](https://raw.githubusercontent.com/codingjoe/relint/master/LICENSE)
+[![GitHub License](https://img.shields.io/github/license/codingjoe/relint)](https://raw.githubusercontent.com/codingjoe/relint/main/LICENSE)
 
 ## Installation
 
@@ -40,7 +40,7 @@ exit with a bad (non-zero) exit code. The default is `true`.
 
 The following command will lint all files in the current directory:
 
-```shell-session
+```shell
 relint -c .relint.yml **
 ```
 
