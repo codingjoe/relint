@@ -3,14 +3,14 @@ index 43032c5..e7203b3 100644
 --- a/README.rst
 +++ b/README.rst
 @@ -51,7 +51,7 @@ If you prefer linting changed files (cached on git) you can use the option
- 
+
  .. code-block:: bash
- 
+
 -    relint my_file.py --diff
 +    git diff | relint my_file.py --diff
- 
+
  This option is useful for pre-commit purposes.
- 
+
 diff --git a/relint.py b/relint.py
 index 31061ec..697a3f0 100644
 --- a/relint.py
@@ -18,16 +18,16 @@ index 31061ec..697a3f0 100644
 @@ -113,7 +113,7 @@ def print_culprits(matches):
      for filename, test, match, _ in matches:
          exit_code = test.error if exit_code == 0 else exit_code
- 
+
 -        if filename != _filename:
 +        if filename != _filename:  # TODO check this out
              _filename = filename
              lines = match.string.splitlines()
- 
+
 @@ -167,7 +167,7 @@ def main():
          for path in paths
      )
- 
+
 -    if args.diff:
 +    if args.diff:  # TODO wow
          output = sys.stdin.read()
@@ -40,20 +40,20 @@ index 7165fd3..249b783 100644
 @@ -54,8 +54,9 @@ class TestParseGitDiff:
      def test_split_diff_content(self):
          output = open('test.diff').read()
-         splited = split_diff_content(output)
+         split = split_diff_content(output)
 +
-         assert isinstance(splited, dict)
--        assert len(splited) == 2
-+        assert len(splited) == 3
- 
+         assert isinstance(split, dict)
+-        assert len(split) == 2
++        assert len(split) == 3
+
      def test_return_empty_list_if_can_not_split_diff_content(self):
-         splited = split_diff_content('')
+         split = split_diff_content('')
 @@ -120,7 +121,7 @@ class TestParseGitDiff:
                  "@@ -1,0 +2 @@\n" \
                  "+# TODO: I'll do it later, promise\n"
- 
+
 -        parsed_content = parse_diff(output)
 +        parsed_content = parse_diff(output)  # TODO brand new
          expected = {'test_relint.py': [2]}
- 
+
          assert parsed_content == expected

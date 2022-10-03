@@ -74,10 +74,10 @@ def split_diff_content_by_filename(output: str) -> {str: str}:
     """
     content_by_filename = {}
     filenames = parse_filenames(output)
-    splited_content = re.split(GIT_DIFF_SPLIT_PATTERN, output)
-    splited_content = filter(lambda x: x != "", splited_content)
+    split_content = re.split(GIT_DIFF_SPLIT_PATTERN, output)
+    split_content = filter(lambda x: x != "", split_content)
 
-    for filename, content in zip(filenames, splited_content):
+    for filename, content in zip(filenames, split_content):
         content_by_filename[filename] = content
     return content_by_filename
 
