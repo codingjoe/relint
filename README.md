@@ -28,10 +28,6 @@ You can write your own regular rules in a YAML file, like so:
   error: false
 ```
 
-```regexp
-/(reg)ex/
-```
-
 The `name` attribute is the name of your linter, the `pattern` can be
 any regular expression. The linter does lint entire files, therefore
 your expressions can match multiple lines and include newlines.
