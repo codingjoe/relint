@@ -1,1 +1,0 @@
-exclude .* test* relint-pre-commit.sh
