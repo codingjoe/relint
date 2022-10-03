@@ -1,2 +1,2 @@
 [bandit]
-exclude: test_relint
+exclude: tests

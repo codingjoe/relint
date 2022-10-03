@@ -102,3 +102,6 @@ ENV/
 
 # PyTest
 .pytest_cache/
+
+# SCM
+_version.py
