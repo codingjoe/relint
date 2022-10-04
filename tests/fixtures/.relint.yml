@@ -3,8 +3,3 @@
   hint: Get it done right away!
   filePattern: ^(?!.*test_).*\.(py|js)$
   error: false
-
-- name: Not Unicode
-  pattern: '[tT][oO][dD][oO]'
-  filePattern: .*
-  error: false

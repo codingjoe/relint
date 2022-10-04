@@ -82,7 +82,7 @@ def split_diff_content_by_filename(output: str) -> {str: str}:
     return content_by_filename
 
 
-def print_culprits(matches):
+def print_culprits(matches, msg_template):
     exit_code = 0
     _filename = ""
     lines = []
@@ -96,24 +96,23 @@ def print_culprits(matches):
 
         start_line_no = match.string[: match.start()].count("\n")
         end_line_no = match.string[: match.end()].count("\n")
-        output_format = "{filename}:{line_no} {test.name}"
-        print(
-            output_format.format(
-                filename=filename,
-                line_no=start_line_no + 1,
-                test=test,
-            )
-        )
-        if test.hint:
-            print("Hint:", test.hint)
         match_lines = (
             "{line_no}>    {code_line}".format(
                 line_no=no + start_line_no + 1,
-                code_line=line,
+                code_line=line.lstrip(),
             )
             for no, line in enumerate(lines[start_line_no : end_line_no + 1])
         )
-        print(*match_lines, sep="\n")
+        # special characters from shell are escaped
+        msg_template = msg_template.replace("\\n", "\n")
+        print(
+            msg_template.format(
+                filename=filename,
+                line_no=start_line_no + 1,
+                test=test,
+                match=chr(10).join(match_lines),
+            )
+        )
 
     return exit_code
 

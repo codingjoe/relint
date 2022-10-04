@@ -54,6 +54,29 @@ option `--diff [-d]` or `--git-diff [-g]`:
 git diff --unified=0 | relint my_file.py --diff
 ```
 
+### Custom message format
+
+Customize the output message format with the `--msg-template=<format string>` option.
+[Python format syntax](https://docs.python.org/3/library/string.html#formatstrings)
+is suported for the message template and the following fields are available:
+
+* filename
+
+    The name of the file being linted.
+
+* line_no
+
+    The line number of the match.
+
+* match
+
+    The matched text.
+
+* test.*
+
+  Any attribute of the test rule, e.g. `test.name` or `test.hint`.
+
+
 ### pre-commit
 
 You can automate the linting process by adding a
