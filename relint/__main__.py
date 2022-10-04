@@ -48,7 +48,7 @@ def parse_args(args):
         type=str,
         default="{filename}:{line_no} {test.name}\nHint: {test.hint}\n{match}",
         help="Template used to display messages. "
-        "Default: {filename}:{line_no} {test.name}\nHint: {test.hint}\n{match}",
+        r"Default: {filename}:{line_no} {test.name}\nHint: {test.hint}\n{match}",
     )
     return parser.parse_args(args=args)
 

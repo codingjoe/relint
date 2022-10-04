@@ -36,7 +36,7 @@ class TestMain:
 
         with tmpdir.as_cwd():
             with pytest.raises(SystemExit) as exc_info:
-                template = "😵{filename}:{line_no} | {test.name} \n {match}"
+                template = r"😵{filename}:{line_no} | {test.name} \n {match}"
                 main(["relint.py", "dummy.py", "--msg-template", template])
 
         expected_message = "😵dummy.py:1 | No ToDo \n" " 1>    # TODO do something\n"

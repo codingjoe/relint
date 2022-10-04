@@ -54,10 +54,11 @@ option `--diff [-d]` or `--git-diff [-g]`:
 git diff --unified=0 | relint my_file.py --diff
 ```
 
-### custom message format
+### Custom message format
 
-You can customize the output message format by using the `--msg-template=<format string>` option.
-The format string uses the [Python format syntax](https://docs.python.org/3/library/string.html#formatstrings) and the following fields are available:
+Customize the output message format with the `--msg-template=<format string>` option.
+[Python format syntax](https://docs.python.org/3/library/string.html#formatstrings)
+is suported for the message template and the following fields are available:
 
 * filename
 
