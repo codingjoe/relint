@@ -16,6 +16,8 @@
 python3 -m pip install relint
 ```
 
+## [Examples & Recipes – The reLint Cookbook](COOKBOOK.md)
+
 ## Usage
 
 You can write your own regular rules in a YAML file, like so:
@@ -89,28 +91,4 @@ following entry to your `.pre-commit-config.yaml`:
   hooks:
     - id: relint
       args: [-W]  # optional, if you want to fail on warnings during commit
-```
-
-## Samples
-
-```yaml
-- name: db fixtures
-  pattern: 'def test_[^(]+\([^)]*(customer|product)(, |\))'
-  hint: Use model_bakery recipes instead of db fixtures.
-  filePattern: test_.*\.py
-
-- name: model_bakery recipes
-  pattern: baker\.make\(
-  hint: Please use baker.make_recipe instead of baker.make.
-  filePattern: (test_.*|conftest)\.py
-
-- name: the database is lava
-  pattern: '@pytest.fixture.*\n[ ]*def [^(]+\([^)]*(db|transactional_db)(, |\))'
-  hint: Please do not create db fixtures but model_bakery recipes instead.
-  filePattern: .*\.py
-
-- name: No logger in management commands
-  pattern: (logger|import logging)
-  hint: Please write to self.stdout or self.stderr in favor of using a logger.
-  filePattern: \/management\/commands\/.*\.py
 ```
