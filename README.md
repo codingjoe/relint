@@ -16,7 +16,7 @@
 python3 -m pip install relint
 ```
 
-## [Examples & Recipes – The reLint Cookbook](COOKBOOK.md)
+## [Examples & Recipes – The reLint Cookbook](https://github.com/codingjoe/relint/blob/main/COOKBOOK.md)
 
 ## Usage
 
