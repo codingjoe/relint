@@ -62,20 +62,16 @@ Customize the output message format with the `--msg-template=<format string>` op
 [Python format syntax](https://docs.python.org/3/library/string.html#formatstrings)
 is suported for the message template and the following fields are available:
 
-* filename
+* `filename`
+  The name of the file being linted.
 
-    The name of the file being linted.
+* `line_no`
+  The line number of the match.
 
-* line_no
+* `match`
+  The matched text.
 
-    The line number of the match.
-
-* match
-
-    The matched text.
-
-* test.*
-
+* `test.*`
   Any attribute of the test rule, e.g. `test.name` or `test.hint`.
 
 
