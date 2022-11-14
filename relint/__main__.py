@@ -9,7 +9,7 @@ from relint.config import load_config
 from relint.parse import lint_file, match_with_diff_changes, parse_diff, print_culprits
 
 
-def parse_args(args):
+def parse_args(args=None):
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--version",
@@ -53,8 +53,8 @@ def parse_args(args):
     return parser.parse_args(args=args)
 
 
-def main(args=sys.argv[1:]):
-    args = parse_args(args)
+def main(args=None):
+    args = parse_args(args=args)
     if args.version:
         from . import __version__
 
@@ -70,6 +70,7 @@ def main(args=sys.argv[1:]):
 
     matches = chain.from_iterable(lint_file(path, tests) for path in paths)
 
+    output = ""
     if args.diff:
         output = sys.stdin.read()
     elif args.git_diff:
