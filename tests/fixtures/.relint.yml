@@ -3,3 +3,9 @@
   hint: Get it done right away!
   filePattern: ^(?!.*test_).*\.(py|js)$
   error: false
+
+- name: No fixme (warning)
+  pattern: '[fF][iI][xX][mM][eE]'
+  hint: Fix it right away!
+  filePattern: ^(?!.*test_).*\.(py|js)$
+  error: true
