@@ -43,6 +43,9 @@ def parse_args(args=None):
         "-W", "--fail-warnings", action="store_true", help="Fail for warnings."
     )
     parser.add_argument(
+        "--ignore-warnings", action="store_true", help="Ignore warnings."
+    )
+    parser.add_argument(
         "--msg-template",
         metavar="MSG_TEMPLATE",
         type=str,
@@ -66,7 +69,7 @@ def main(args=None):
         for path in glob.iglob(glob.escape(file), recursive=True)
     }
 
-    tests = list(load_config(args.config, args.fail_warnings))
+    tests = list(load_config(args.config, args.fail_warnings, args.ignore_warnings))
 
     matches = chain.from_iterable(lint_file(path, tests) for path in paths)
 

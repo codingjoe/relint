@@ -18,10 +18,13 @@ Test = collections.namedtuple(
 )
 
 
-def load_config(path, fail_warnings):
+def load_config(path, fail_warnings, ignore_warnings):
     with open(path) as fs:
         try:
             for test in yaml.safe_load(fs):
+                if ignore_warnings and not test.get("error", True):
+                    continue
+
                 file_pattern = test.get("filePattern", ".*")
                 file_pattern = re.compile(file_pattern)
                 yield Test(
