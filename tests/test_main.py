@@ -17,16 +17,31 @@ def test_version(tmpdir, capsys):
 
 
 class TestMain:
-    @pytest.mark.parametrize("filename", ["test_parse.py", "[a-b].py", "[b-a].py"])
-    def test_main_execution(self, filename, tmpdir, fixture_dir):
+    def test_main_execution(self, tmpdir, fixture_dir):
         with (fixture_dir / ".relint.yml").open() as fs:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
+        tmpdir.join("dummy.py").write("# TODO do something")
         with tmpdir.as_cwd():
             with pytest.raises(SystemExit) as exc_info:
-                main(["relint.py", filename])
+                main(["relint.py", "dummy.py"])
 
         assert exc_info.value.code == 0
+
+    def test_main_execution_with_error(self, capsys, tmpdir, fixture_dir):
+        with (fixture_dir / ".relint.yml").open() as fs:
+            config = fs.read()
+        tmpdir.join(".relint.yml").write(config)
+        tmpdir.join("dummy.py").write("# FIXME do something")
+        with tmpdir.as_cwd():
+            with pytest.raises(SystemExit) as exc_info:
+                main(["relint.py", "dummy.py"])
+
+        expected_message = "dummy.py:1 No fixme (warning)\nHint: Fix it right away!\n1>    # FIXME do something\n"
+
+        out, _ = capsys.readouterr()
+        assert expected_message == out
+        assert exc_info.value.code == 1
 
     def test_main_execution_with_custom_template(self, capsys, tmpdir, fixture_dir):
         with (fixture_dir / ".relint.yml").open() as fs:
@@ -45,16 +60,16 @@ class TestMain:
         assert expected_message == out
         assert exc_info.value.code == 0
 
-    @pytest.mark.parametrize("filename", ["test_parse.py", "[a-b].py", "[b-a].py"])
-    def test_raise_for_warnings(self, filename, tmpdir, fixture_dir):
+    def test_raise_for_warnings(self, tmpdir, fixture_dir):
         with (fixture_dir / ".relint.yml").open() as fs:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
+        tmpdir.join("dummy.py").write("# TODO do something")
         with tmpdir.as_cwd():
             with pytest.raises(SystemExit) as exc_info:
-                main(["relint.py", "-W", filename])
+                main(["relint.py", "dummy.py", "-W"])
 
-        assert exc_info.value.code != 0
+        assert exc_info.value.code == 1
 
     def test_main_execution_with_diff(self, capsys, mocker, tmpdir, fixture_dir):
         with (fixture_dir / ".relint.yml").open() as fs:
