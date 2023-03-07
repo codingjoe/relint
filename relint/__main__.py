@@ -43,7 +43,9 @@ def parse_args(args=None):
         "-W", "--fail-warnings", action="store_true", help="Fail for warnings."
     )
     parser.add_argument(
-        "--ignore-warnings", action="store_true", help="Ignore warnings."
+        "--ignore-warnings",
+        action="store_true",
+        help="Do not output warnings. Could be useful when using relint in CI.",
     )
     parser.add_argument(
         "--msg-template",
