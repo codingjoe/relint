@@ -71,6 +71,17 @@ class TestMain:
 
         assert exc_info.value.code == 1
 
+    def test_ignore_warnings(self, tmpdir, fixture_dir):
+        with (fixture_dir / ".relint.yml").open() as fs:
+            config = fs.read()
+        tmpdir.join(".relint.yml").write(config)
+        tmpdir.join("dummy.py").write("# TODO do something")
+        with tmpdir.as_cwd():
+            with pytest.raises(SystemExit) as exc_info:
+                main(["relint.py", "dummy.py", "--ignore-warnings"])
+
+        assert exc_info.value.code == 0
+
     def test_main_execution_with_diff(self, capsys, mocker, tmpdir, fixture_dir):
         with (fixture_dir / ".relint.yml").open() as fs:
             config = fs.read()
