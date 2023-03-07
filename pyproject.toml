@@ -70,3 +70,7 @@ combine_as_imports = true
 
 [tool.pydocstyle]
 add_ignore = "D1"
+
+[tool.bandit]
+exclude_dirs = ["*/tests/*",]
+skips = ["B101",]
