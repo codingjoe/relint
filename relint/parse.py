@@ -1,6 +1,13 @@
 from __future__ import annotations
 
+import collections
 import re
+
+from rich import print as rprint
+from rich.console import Group
+from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.syntax import Syntax
 
 GIT_DIFF_LINE_NUMBERS_PATTERN = re.compile(r"@ -\d+(,\d+)? \+(\d+)(,)?(\d+)? @")
 GIT_DIFF_FILENAME_PATTERN = re.compile(r"(?:\n|^)diff --git a\/.* b\/(.*)(?:\n|$)")
@@ -82,37 +89,77 @@ def split_diff_content_by_filename(output: str) -> {str: str}:
     return content_by_filename
 
 
-def print_culprits(matches, msg_template):
+def print_culprits(matches, args):
     exit_code = 0
-    _filename = ""
-    lines = []
+    messages = []
+    match_groups = collections.defaultdict(list)
 
     for filename, test, match, _ in matches:
         exit_code = test.error if exit_code == 0 else exit_code
 
-        if filename != _filename:
-            _filename = filename
-            lines = match.string.splitlines()
+        start_line_no = match.string[: match.start()].count("\n") + 1
+        end_line_no = match.string[: match.end()].count("\n") + 1
 
-        start_line_no = match.string[: match.start()].count("\n")
-        end_line_no = match.string[: match.end()].count("\n")
-        match_lines = (
-            "{line_no}>    {code_line}".format(
-                line_no=no + start_line_no + 1,
-                code_line=line.lstrip(),
+        if args.summarize:
+            match_groups[test].append(f"{filename}:{start_line_no}")
+        else:
+            hint = Panel(
+                Markdown(test.hint, justify="left"),
+                title="Hint:",
+                title_align="left",
+                padding=(0, 2),
             )
-            for no, line in enumerate(lines[start_line_no : end_line_no + 1])
-        )
-        # special characters from shell are escaped
-        msg_template = msg_template.replace("\\n", "\n")
-        print(
-            msg_template.format(
-                filename=filename,
-                line_no=start_line_no + 1,
-                test=test,
-                match=chr(10).join(match_lines),
+
+            if args.code_padding == -1:
+                message = hint
+            else:
+                lexer = Syntax.guess_lexer(filename)
+                syntax = Syntax(
+                    match.string,
+                    lexer=lexer,
+                    line_numbers=True,
+                    line_range=(
+                        start_line_no - args.code_padding,
+                        end_line_no + args.code_padding,
+                    ),
+                    highlight_lines=range(start_line_no, end_line_no + 1),
+                )
+                message = Group(syntax, hint)
+
+            messages.append(
+                Panel(
+                    message,
+                    title=f"{'Error' if test.error else 'Warning'}: {test.name}",
+                    title_align="left",
+                    subtitle=f"{filename}:{start_line_no}",
+                    subtitle_align="left",
+                    border_style="bold red" if test.error else "yellow",
+                    padding=(0, 2),
+                )
             )
-        )
+
+    if args.summarize:
+        for test, filenames in match_groups.items():
+            hint = Panel(
+                Markdown(test.hint, justify="left"),
+                title="Hint:",
+                title_align="left",
+                padding=(0, 2),
+            )
+            group = Group(Group(*filenames), hint)
+            messages.append(
+                Panel(
+                    group,
+                    title=f"{'Error' if test.error else 'Warning'}: {test.name}",
+                    title_align="left",
+                    subtitle=f"{len(filenames)} occurrence(s)",
+                    subtitle_align="left",
+                    border_style="bold red" if test.error else "yellow",
+                    padding=(0, 2),
+                )
+            )
+
+    rprint(*messages, sep="\n")
 
     return exit_code
 

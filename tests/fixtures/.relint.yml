@@ -6,6 +6,28 @@
 
 - name: No fixme (warning)
   pattern: '[fF][iI][xX][mM][eE]'
-  hint: Fix it right away!
+  hint: |
+    ### This is a multiline hint
+    Fix it right away!
+
+    You can use code blocks too, like Python:
+
+    ```python
+    print('hello world')
+    ```
+
+    Or JavaScript:
+
+    ```javascript
+    console.log('hello world')
+    ```
+
+    And even Git diffs:
+
+    ```diff
+    - print('hello world')
+    + console.log('hello world')
+    ```
+
   filePattern: ^(?!.*test_).*\.(py|js)$
   error: true

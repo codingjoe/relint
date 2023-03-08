@@ -37,28 +37,12 @@ class TestMain:
             with pytest.raises(SystemExit) as exc_info:
                 main(["relint.py", "dummy.py"])
 
-        expected_message = "dummy.py:1 No fixme (warning)\nHint: Fix it right away!\n1>    # FIXME do something\n"
-
         out, _ = capsys.readouterr()
-        assert expected_message == out
+        assert "dummy.py:1" in out
+        assert "No fixme (warning)" in out
+        assert "Fix it right away!" in out
+        assert "❱ 1 # FIXME do something" in out
         assert exc_info.value.code == 1
-
-    def test_main_execution_with_custom_template(self, capsys, tmpdir, fixture_dir):
-        with (fixture_dir / ".relint.yml").open() as fs:
-            config = fs.read()
-        tmpdir.join(".relint.yml").write(config)
-        tmpdir.join("dummy.py").write("# TODO do something")
-
-        with tmpdir.as_cwd():
-            with pytest.raises(SystemExit) as exc_info:
-                template = r"😵{filename}:{line_no} | {test.name} \n {match}"
-                main(["relint.py", "dummy.py", "--msg-template", template])
-
-        expected_message = "😵dummy.py:1 | No ToDo \n" " 1>    # TODO do something\n"
-
-        out, _ = capsys.readouterr()
-        assert expected_message == out
-        assert exc_info.value.code == 0
 
     def test_raise_for_warnings(self, tmpdir, fixture_dir):
         with (fixture_dir / ".relint.yml").open() as fs:
@@ -82,6 +66,37 @@ class TestMain:
 
         assert exc_info.value.code == 0
 
+    def test_summarize(self, tmpdir, fixture_dir, capsys):
+        with (fixture_dir / ".relint.yml").open() as fs:
+            config = fs.read()
+        tmpdir.join(".relint.yml").write(config)
+        tmpdir.join("dummy.py").write("# FIXME do something")
+        with tmpdir.as_cwd():
+            with pytest.raises(SystemExit) as exc_info:
+                main(["relint.py", "dummy.py", "--summarize"])
+
+        out, _ = capsys.readouterr()
+        assert "dummy.py:1" in out
+        assert "No fixme (warning)" in out
+        assert "Fix it right away!" in out
+        assert "1 occurrence(s)" in out
+        assert exc_info.value.code == 1
+
+    def test_code_padding_disabled(self, tmpdir, fixture_dir, capsys):
+        with (fixture_dir / ".relint.yml").open() as fs:
+            config = fs.read()
+        tmpdir.join(".relint.yml").write(config)
+        tmpdir.join("dummy.py").write("# FIXME do something")
+        with tmpdir.as_cwd():
+            with pytest.raises(SystemExit) as exc_info:
+                main(["relint.py", "dummy.py", "--code-padding=-1"])
+
+        out, _ = capsys.readouterr()
+        assert "dummy.py:1" in out
+        assert "No fixme (warning)" in out
+        assert "Fix it right away!" in out
+        assert exc_info.value.code == 1
+
     def test_main_execution_with_diff(self, capsys, mocker, tmpdir, fixture_dir):
         with (fixture_dir / ".relint.yml").open() as fs:
             config = fs.read()
@@ -99,8 +114,6 @@ class TestMain:
             with pytest.raises(SystemExit) as exc_info:
                 main(["relint.py", "dummy.py", "--diff"])
 
-        expected_message = "Hint: Get it done right away!"
-
         out, _ = capsys.readouterr()
-        assert expected_message in out
+        assert "Get it done right away!" in out
         assert exc_info.value.code == 0
