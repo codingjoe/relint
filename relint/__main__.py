@@ -3,7 +3,8 @@ import glob
 import subprocess  # nosec
 import sys
 import warnings
-from itertools import chain
+
+from rich.progress import track
 
 from relint.config import load_config
 from relint.parse import lint_file, match_with_diff_changes, parse_diff, print_culprits
@@ -48,12 +49,18 @@ def parse_args(args=None):
         help="Do not output warnings. Could be useful when using relint in CI.",
     )
     parser.add_argument(
-        "--msg-template",
-        metavar="MSG_TEMPLATE",
-        type=str,
-        default="{filename}:{line_no} {test.name}\nHint: {test.hint}\n{match}",
-        help="Template used to display messages. "
-        r"Default: {filename}:{line_no} {test.name}\nHint: {test.hint}\n{match}",
+        "--summarize",
+        action="store_true",
+        help="Summarize the output by grouping matches by test.",
+    ),
+    parser.add_argument(
+        "--code-padding",
+        type=int,
+        default=2,
+        help=(
+            "Lines of padding to show around the matching code snippet. Default: 2\n"
+            "Set to -1 disable code snippet output."
+        ),
     )
     return parser.parse_args(args=args)
 
@@ -73,7 +80,9 @@ def main(args=None):
 
     tests = list(load_config(args.config, args.fail_warnings, args.ignore_warnings))
 
-    matches = chain.from_iterable(lint_file(path, tests) for path in paths)
+    matches = []
+    for path in track(paths, description="Linting files..."):
+        matches.extend(lint_file(path, tests))
 
     output = ""
     if args.diff:
@@ -87,7 +96,7 @@ def main(args=None):
         changed_content = parse_diff(output)
         matches = match_with_diff_changes(changed_content, matches)
 
-    exit_code = print_culprits(matches, args.msg_template)
+    exit_code = print_culprits(matches, args)
     exit(exit_code)
 
 
