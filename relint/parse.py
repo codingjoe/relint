@@ -103,7 +103,7 @@ def print_culprits(matches, args):
         if args.summarize:
             match_groups[test].append(f"{filename}:{start_line_no}")
         else:
-            if tests.hint is not None:
+            if test.hint is not None:
                 hint = Panel(
                     Markdown(test.hint, justify="left"),
                     title="Hint:",
@@ -125,7 +125,7 @@ def print_culprits(matches, args):
                     ),
                     highlight_lines=range(start_line_no, end_line_no + 1),
                 )
-                if tests.hint is None:
+                if test.hint is None:
                     message = syntax
                 else:
                     message = Group(syntax, hint)
@@ -144,13 +144,17 @@ def print_culprits(matches, args):
 
     if args.summarize:
         for test, filenames in match_groups.items():
-            hint = Panel(
-                Markdown(test.hint, justify="left"),
-                title="Hint:",
-                title_align="left",
-                padding=(0, 2),
-            )
-            group = Group(Group(*filenames), hint)
+            if test.hint is not None:
+                hint = Panel(
+                    Markdown(test.hint, justify="left"),
+                    title="Hint:",
+                    title_align="left",
+                    padding=(0, 2),
+                )
+            if test.hint is None:
+                group = Group(*filenames)
+            else:
+                group = Group(Group(*filenames), hint)
             messages.append(
                 Panel(
                     group,
