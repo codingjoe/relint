@@ -154,7 +154,7 @@ def print_culprits(matches, args):
                 group = Group(Group(*filenames), hint)
             else:
                 group = Group(*filenames)
-                
+
             messages.append(
                 Panel(
                     group,
