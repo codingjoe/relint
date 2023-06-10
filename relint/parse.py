@@ -103,36 +103,36 @@ def print_culprits(matches, args):
         if args.summarize:
             match_groups[test].append(f"{filename}:{start_line_no}")
         else:
-            if test.hint:
-                hint = Panel(
-                    Markdown(test.hint, justify="left"),
-                    title="Hint:",
-                    title_align="left",
-                    padding=(0, 2),
+            message_bits = []
+
+            if args.code_padding != -1:
+                lexer = Syntax.guess_lexer(filename)
+                message_bits.append(
+                    Syntax(
+                        match.string,
+                        lexer=lexer,
+                        line_numbers=True,
+                        line_range=(
+                            start_line_no - args.code_padding,
+                            end_line_no + args.code_padding,
+                        ),
+                        highlight_lines=range(start_line_no, end_line_no + 1),
+                    )
                 )
 
-            if args.code_padding == -1:
-                message = hint
-            else:
-                lexer = Syntax.guess_lexer(filename)
-                syntax = Syntax(
-                    match.string,
-                    lexer=lexer,
-                    line_numbers=True,
-                    line_range=(
-                        start_line_no - args.code_padding,
-                        end_line_no + args.code_padding,
-                    ),
-                    highlight_lines=range(start_line_no, end_line_no + 1),
+            if test.hint:
+                message_bits.append(
+                    Panel(
+                        Markdown(test.hint, justify="left"),
+                        title="Hint:",
+                        title_align="left",
+                        padding=(0, 2),
+                    )
                 )
-                if test.hint:
-                    message = Group(syntax, hint)
-                else:
-                    message = syntax
 
             messages.append(
                 Panel(
-                    message,
+                    Group(*message_bits),
                     title=f"{'Error' if test.error else 'Warning'}: {test.name}",
                     title_align="left",
                     subtitle=f"{filename}:{start_line_no}",
