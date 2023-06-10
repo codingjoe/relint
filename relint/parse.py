@@ -146,12 +146,15 @@ def print_culprits(matches, args):
         for test, filenames in match_groups.items():
             group = Group(*filenames)
             if test.hint:
-                group = Group(group, Panel(
-                    Markdown(test.hint, justify="left"),
-                    title="Hint:",
-                    title_align="left",
-                    padding=(0, 2),
-                ))
+                group = Group(
+                    group,
+                    Panel(
+                        Markdown(test.hint, justify="left"),
+                        title="Hint:",
+                        title_align="left",
+                        padding=(0, 2),
+                    ),
+                )
 
             messages.append(
                 Panel(
