@@ -144,6 +144,7 @@ def print_culprits(matches, args):
 
     if args.summarize:
         for test, filenames in match_groups.items():
+            group = Group(*filenames)
             if test.hint:
                 hint = Panel(
                     Markdown(test.hint, justify="left"),
@@ -151,9 +152,7 @@ def print_culprits(matches, args):
                     title_align="left",
                     padding=(0, 2),
                 )
-                group = Group(Group(*filenames), hint)
-            else:
-                group = Group(*filenames)
+                group = Group(group, hint)
 
             messages.append(
                 Panel(

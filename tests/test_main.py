@@ -44,14 +44,15 @@ class TestMain:
         assert "❱ 1 # FIXME do something" in out
         assert exc_info.value.code == 1
 
-    def test_main_execution_without_hint(self, capsys, tmpdir, fixture_dir):
+    @pytest.mark.parametrize("args", [tuple(), ("--summarize")])
+    def test_main_execution_without_hint(self, args, capsys, tmpdir, fixture_dir):
         with (fixture_dir / ".relint.yml").open() as fs:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# hint: 🤐")
         with tmpdir.as_cwd():
             with pytest.raises(SystemExit):
-                main(["relint.py", "dummy.py"])
+                main(["relint.py", "dummy.py", *args])
 
         out, _ = capsys.readouterr()
         assert "dummy.py:1" in out
