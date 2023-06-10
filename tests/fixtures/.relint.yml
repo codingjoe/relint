@@ -31,3 +31,7 @@
 
   filePattern: ^(?!.*test_).*\.(py|js)$
   error: true
+
+- name: no hint
+  pattern: '(?i)hint'
+  filePattern: ^(?!.*test_).*\.(py|js)$

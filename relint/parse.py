@@ -103,32 +103,36 @@ def print_culprits(matches, args):
         if args.summarize:
             match_groups[test].append(f"{filename}:{start_line_no}")
         else:
-            hint = Panel(
-                Markdown(test.hint, justify="left"),
-                title="Hint:",
-                title_align="left",
-                padding=(0, 2),
-            )
+            message_bits = []
 
-            if args.code_padding == -1:
-                message = hint
-            else:
+            if args.code_padding != -1:
                 lexer = Syntax.guess_lexer(filename)
-                syntax = Syntax(
-                    match.string,
-                    lexer=lexer,
-                    line_numbers=True,
-                    line_range=(
-                        start_line_no - args.code_padding,
-                        end_line_no + args.code_padding,
-                    ),
-                    highlight_lines=range(start_line_no, end_line_no + 1),
+                message_bits.append(
+                    Syntax(
+                        match.string,
+                        lexer=lexer,
+                        line_numbers=True,
+                        line_range=(
+                            start_line_no - args.code_padding,
+                            end_line_no + args.code_padding,
+                        ),
+                        highlight_lines=range(start_line_no, end_line_no + 1),
+                    )
                 )
-                message = Group(syntax, hint)
+
+            if test.hint:
+                message_bits.append(
+                    Panel(
+                        Markdown(test.hint, justify="left"),
+                        title="Hint:",
+                        title_align="left",
+                        padding=(0, 2),
+                    )
+                )
 
             messages.append(
                 Panel(
-                    message,
+                    Group(*message_bits),
                     title=f"{'Error' if test.error else 'Warning'}: {test.name}",
                     title_align="left",
                     subtitle=f"{filename}:{start_line_no}",
@@ -140,13 +144,18 @@ def print_culprits(matches, args):
 
     if args.summarize:
         for test, filenames in match_groups.items():
-            hint = Panel(
-                Markdown(test.hint, justify="left"),
-                title="Hint:",
-                title_align="left",
-                padding=(0, 2),
-            )
-            group = Group(Group(*filenames), hint)
+            group = Group(*filenames)
+            if test.hint:
+                group = Group(
+                    group,
+                    Panel(
+                        Markdown(test.hint, justify="left"),
+                        title="Hint:",
+                        title_align="left",
+                        padding=(0, 2),
+                    ),
+                )
+
             messages.append(
                 Panel(
                     group,
