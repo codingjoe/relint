@@ -119,11 +119,12 @@ class TestParseGitDiff:
 
     def test_empty_config_file(self, tmpdir):
         tmpdir.join(".relint.yml").write("")
+        tmpdir.join("dummy.py").write("")
 
         with tmpdir.as_cwd():
             with warnings.catch_warnings(record=True) as w:
                 with pytest.raises(SystemExit) as exc_info:
-                    main(["**"])
+                    main(["dummy.py"])
 
         assert exc_info.value.code == 0
         assert issubclass(w[-1].category, UserWarning)
@@ -160,7 +161,7 @@ class TestParseGitDiff:
 
         with tmpdir.as_cwd():
             with pytest.raises(SystemExit) as exc_info:
-                main(["relint.py", "dummy.py", "--git-diff"])
+                main(["dummy.py", "--git-diff"])
 
         assert "0" in str(exc_info.value)
 
@@ -174,5 +175,5 @@ def test_no_unicode(capsys, tmpdir, fixture_dir):
     tmpdir.join("test.png").write(png, mode="wb")
     with tmpdir.as_cwd():
         with pytest.raises(SystemExit) as exc_info:
-            main(["relint.py", "test.png"])
+            main(["test.png"])
     assert "0" in str(exc_info.value)
