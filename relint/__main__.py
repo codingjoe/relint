@@ -1,5 +1,4 @@
 import argparse
-import glob
 import subprocess  # nosec
 import sys
 import warnings
@@ -72,16 +71,11 @@ def main(args=None):
 
         print(f"relint: {__version__}")
         exit(0)
-    paths = {
-        path
-        for file in args.files
-        for path in glob.iglob(glob.escape(file), recursive=True)
-    }
 
     tests = list(load_config(args.config, args.fail_warnings, args.ignore_warnings))
 
     matches = []
-    for path in track(paths, description="Linting files..."):
+    for path in track(args.files, description="Linting files..."):
         matches.extend(lint_file(path, tests))
 
     output = ""

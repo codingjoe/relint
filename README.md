@@ -43,7 +43,7 @@ exit with a bad (non-zero) exit code. The default is `true`.
 The following command will lint all files in the current directory:
 
 ```shell
-relint -c .relint.yml **
+relint -c .relint.yml FILE FILE2 ...
 ```
 
 The default configuration file name is `.relint.yml` within your working
