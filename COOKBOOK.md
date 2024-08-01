@@ -7,6 +7,7 @@ A collection of recipes for reLint. Please feel free to contribute!
 - [Python](#python)
   - [Django](#django)
 - [HTML](#html)
+- [C/C++](#cc)
 
 # Python
 
@@ -103,4 +104,14 @@ A collection of recipes for reLint. Please feel free to contribute!
     Please do not use more than one inline style attribute.
     You may use a CSS class instead.
   filePattern: .*\.(html|vue|jsx|tsx)
+```
+
+# C/C++
+
+```yaml
+- name: no line longer than 80 characters in a line (excluding comments) # by @yangcht
+  pattern: '(?<=\/\*(\*(?!\/)|[^*])*\*\/(\s|\S)*\n)(?!\/\*(\s|\S)*\n)(.{120,})(?!(\s(?!\/\*)|\S(?!\/\*))*\*\/\n)'
+  hint: |
+    Please do not use more than 80 characters in codes except for comments.
+  filePattern: .*\.(C|cc|cxx|cpp|c++|cppm)
 ```
