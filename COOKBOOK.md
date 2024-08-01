@@ -109,9 +109,9 @@ A collection of recipes for reLint. Please feel free to contribute!
 # C/C++
 
 ```yaml
-- name: no line longer than 80 characters in a line (excluding comments) # by @yangcht
-  pattern: '(?<=\/\*(\*(?!\/)|[^*])*\*\/(\s|\S)*\n)(?!\/\*(\s|\S)*\n)(.{120,})(?!(\s(?!\/\*)|\S(?!\/\*))*\*\/\n)'
+- name: no line longer than 120 characters in a line (excluding comments) # by @yangcht
+  pattern: '(?<!^[\p{Zs}\t]*//.*)(?<!/\*(?:(?!\*/)[\s\S\r])*?)\b(.{120,})\b'
   hint: |
-    Please do not use more than 80 characters in codes except for comments.
+    Please do not use more than 120 characters in codes except for comments.
   filePattern: .*\.(C|cc|cxx|cpp|c++|cppm)
 ```
