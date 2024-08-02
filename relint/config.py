@@ -1,5 +1,5 @@
 import collections
-import re
+import regex as re
 import warnings
 
 import yaml
