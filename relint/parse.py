@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import collections
-import re
+import regex as re
 
 from rich import print as rprint
 from rich.console import Group
