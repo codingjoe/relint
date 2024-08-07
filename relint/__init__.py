@@ -1,6 +1,9 @@
 """Write your own linting rules using regular expressions."""
 
-from . import _version
+try:
+    from . import _version
+except ImportError:
+    _version = None
 
-__version__ = _version.version
-VERSION = _version.version_tuple
+__version__ = getattr(_version, 'version', 'unknown')
+VERSION = getattr(_version, 'version_tuple', (0, 0, 0))

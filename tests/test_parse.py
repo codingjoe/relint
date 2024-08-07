@@ -6,13 +6,14 @@ import pytest
 from relint.__main__ import main
 from relint.exceptions import ConfigError
 from relint.parse import (
+    lint_file,
     match_with_diff_changes,
     parse_diff,
     parse_filenames,
     parse_line_numbers,
     split_diff_content_by_filename,
 )
-
+from relint.config import load_config
 
 class TestParseGitDiff:
     def test_line_numbers(self):
@@ -177,3 +178,32 @@ def test_no_unicode(capsys, tmpdir, fixture_dir):
         with pytest.raises(SystemExit) as exc_info:
             main(["test.png"])
     assert "0" in str(exc_info.value)
+
+# New test for complex regex pattern
+def test_cc_linting_rule(tmpdir, fixture_dir):
+    # Create a C++ file with a line longer than 120 characters
+    cc_file = tmpdir.join("example.cpp")
+    cc_file.write(
+        "#include <iostream>\n"
+        "/* This is an extremely long COMMENT that has over one hundred and twenty characters to test whether this is recognized by the regex or not. */\n"
+        "int main() {\n"
+        "    std::cout << \"This is an extremely long CODE that has over one hundred and twenty characters to test whether this is recognized by the regex or not.\"\n"
+        "    return 0;\n"
+        "}\n"
+    )
+
+    with (fixture_dir / ".relint.yml").open() as fs:
+        config = fs.read()
+    tmpdir.join(".relint.yml").write(config)
+
+    # Load the configuration as Test named tuples
+    tests = list(load_config(tmpdir.join(".relint.yml"), fail_warnings=False, ignore_warnings=False))
+
+    print(f"Loaded tests: {tests}")
+    print(f"Content of the file: {cc_file.read()}")
+
+    with tmpdir.as_cwd():
+        matches = list(lint_file(str(cc_file), tests))
+        print(f"Matches found: {matches}")
+        assert len(matches) > 0
+        assert any("no line longer than 120 characters in a line" in match[1].name for match in matches)
