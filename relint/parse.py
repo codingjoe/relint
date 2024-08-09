@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import collections
-import re
+
+try:
+    import regex as re
+except ImportError:
+    import re
 
 from rich import print as rprint
 from rich.console import Group
@@ -14,18 +18,10 @@ try:
 except ImportError:
     re_fallback = None
 
-def compile_pattern(pattern):
-    try:
-        return re.compile(pattern, re.MULTILINE)
-    except re.error:
-        if re_fallback:
-            return re_fallback.compile(pattern, re_fallback.MULTILINE)
-        else:
-            raise
 
-GIT_DIFF_LINE_NUMBERS_PATTERN = compile_pattern(r"@ -\d+(,\d+)? \+(\d+)(,)?(\d+)? @")
-GIT_DIFF_FILENAME_PATTERN = compile_pattern(r"(?:\n|^)diff --git a\/.* b\/(.*)(?:\n|$)")
-GIT_DIFF_SPLIT_PATTERN = compile_pattern(r"(?:\n|^)diff --git a\/.* b\/.*(?:\n|$)")
+GIT_DIFF_LINE_NUMBERS_PATTERN = re.compile(r"@ -\d+(,\d+)? \+(\d+)(,)?(\d+)? @")
+GIT_DIFF_FILENAME_PATTERN = re.compile(r"(?:\n|^)diff --git a\/.* b\/(.*)(?:\n|$)")
+GIT_DIFF_SPLIT_PATTERN = re.compile(r"(?:\n|^)diff --git a\/.* b\/.*(?:\n|$)")
 
 
 def lint_file(filename, tests):
@@ -95,7 +91,7 @@ def split_diff_content_by_filename(output: str) -> {str: str}:
     """
     content_by_filename = {}
     filenames = parse_filenames(output)
-    split_content = re.split(GIT_DIFF_SPLIT_PATTERN, output)
+    split_content = GIT_DIFF_SPLIT_PATTERN.split(output)
     split_content = filter(lambda x: x != "", split_content)
 
     for filename, content in zip(filenames, split_content):

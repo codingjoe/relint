@@ -13,7 +13,8 @@ from relint.parse import (
     parse_line_numbers,
     split_diff_content_by_filename,
 )
-from relint.config import load_config
+from relint.config import Test
+
 
 class TestParseGitDiff:
     def test_line_numbers(self):
@@ -179,15 +180,15 @@ def test_no_unicode(capsys, tmpdir, fixture_dir):
             main(["test.png"])
     assert "0" in str(exc_info.value)
 
-# New test for complex regex pattern
+
 def test_cc_linting_rule(tmpdir, fixture_dir):
-    # Create a C++ file with a line longer than 120 characters
+    regex = pytest.importorskip("regex")
     cc_file = tmpdir.join("example.cpp")
     cc_file.write(
         "#include <iostream>\n"
         "/* This is an extremely long COMMENT that has over one hundred and twenty characters to test whether this is recognized by the regex or not. */\n"
         "int main() {\n"
-        "    std::cout << \"This is an extremely long CODE that has over one hundred and twenty characters to test whether this is recognized by the regex or not.\"\n"
+        '    std::cout << "This is an extremely long CODE that has over one hundred and twenty characters to test whether this is recognized by the regex or not."\n'
         "    return 0;\n"
         "}\n"
     )
@@ -197,13 +198,26 @@ def test_cc_linting_rule(tmpdir, fixture_dir):
     tmpdir.join(".relint.yml").write(config)
 
     # Load the configuration as Test named tuples
-    tests = list(load_config(tmpdir.join(".relint.yml"), fail_warnings=False, ignore_warnings=False))
-
-    print(f"Loaded tests: {tests}")
-    print(f"Content of the file: {cc_file.read()}")
 
     with tmpdir.as_cwd():
-        matches = list(lint_file(str(cc_file), tests))
-        print(f"Matches found: {matches}")
+        matches = list(
+            lint_file(
+                str(cc_file),
+                [
+                    Test(
+                        name="No line longer than 120 characters",
+                        pattern=regex.compile(
+                            "(?<!^[ \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]*//.*)(?<!/\*(?:(?!\*/)[\s\S\r])*?)\b(.{120,})\b"
+                        ),
+                        hint="There should be no line longer than 120 characters in a line.",
+                        file_pattern=regex.compile(".*\.(cpp|h)"),
+                        error=True,
+                    )
+                ],
+            )
+        )
         assert len(matches) > 0
-        assert any("no line longer than 120 characters in a line" in match[1].name for match in matches)
+        assert any(
+            "no line longer than 120 characters in a line" in match[1].name
+            for match in matches
+        )

@@ -1,7 +1,13 @@
 import collections
 import warnings
 
+try:
+    import regex as re
+except ImportError:
+    import re
+
 import yaml
+
 
 from .exceptions import ConfigError
 
@@ -16,24 +22,6 @@ Test = collections.namedtuple(
     ),
 )
 
-try:
-    import re
-    re_compile = re.compile
-except ImportError:
-    re_compile = None
-
-def compile_pattern(pattern):
-    try:
-        return re_compile(pattern, re.MULTILINE)
-    except (re.error, AttributeError) as e:
-        try:
-            import regex
-        except ImportError:
-            import subprocess
-            import sys
-            subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'regex'])
-            import regex
-        return regex.compile(pattern, regex.MULTILINE)
 
 def load_config(path, fail_warnings, ignore_warnings):
     with open(path) as fs:
@@ -43,10 +31,10 @@ def load_config(path, fail_warnings, ignore_warnings):
                     continue
 
                 file_pattern = test.get("filePattern", ".*")
-                file_pattern = compile_pattern(file_pattern)
+                file_pattern = re.compile(file_pattern)
                 yield Test(
                     name=test["name"],
-                    pattern=compile_pattern(test["pattern"]),
+                    pattern=re.compile(test["pattern"]),
                     hint=test.get("hint"),
                     file_pattern=file_pattern,
                     error=test.get("error", True) or fail_warnings,
