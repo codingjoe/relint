@@ -13,7 +13,6 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.syntax import Syntax
 
-
 GIT_DIFF_LINE_NUMBERS_PATTERN = re.compile(r"@ -\d+(,\d+)? \+(\d+)(,)?(\d+)? @")
 GIT_DIFF_FILENAME_PATTERN = re.compile(r"(?:\n|^)diff --git a\/.* b\/(.*)(?:\n|$)")
 GIT_DIFF_SPLIT_PATTERN = re.compile(r"(?:\n|^)diff --git a\/.* b\/.*(?:\n|$)")
