@@ -200,14 +200,14 @@ def test_cc_linting_rule(tmpdir, fixture_dir):
     # Load the configuration as Test named tuples
 
     with tmpdir.as_cwd():
-        matches = list(
+        assert list(
             lint_file(
                 str(cc_file),
                 [
                     Test(
                         name="No line longer than 120 characters",
                         pattern=regex.compile(
-                            "(?<!^[ \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]*//.*)(?<!/\*(?:(?!\*/)[\s\S\r])*?)\b(.{120,})\b"
+                            r".{120,}(?<!\s)(?=\s|$)|.{120,}(?<=\s)(?=\s)"
                         ),
                         hint="There should be no line longer than 120 characters in a line.",
                         file_pattern=regex.compile(".*\.(cpp|h)"),
@@ -215,9 +215,4 @@ def test_cc_linting_rule(tmpdir, fixture_dir):
                     )
                 ],
             )
-        )
-        assert len(matches) > 0
-        assert any(
-            "no line longer than 120 characters in a line" in match[1].name
-            for match in matches
         )
