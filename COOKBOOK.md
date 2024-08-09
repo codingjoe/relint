@@ -109,6 +109,7 @@ A collection of recipes for reLint. Please feel free to contribute!
 # C/C++
 
 ```yaml
+# This rule requires you to install the extra `regex` dependency.
 - name: no line longer than 120 characters in a line (excluding comments) # by @yangcht
   pattern: '(?<!^[ \u00A0\u1680\u2000-\u200A\u202F\u205F\u3000]*//.*)(?<!/\*(?:(?!\*/)[\s\S\r])*?)\b(.{120,})\b'
   hint: |
