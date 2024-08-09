@@ -1,6 +1,10 @@
 import collections
-import re
 import warnings
+
+try:
+    import regex as re
+except ImportError:
+    import re
 
 import yaml
 
@@ -29,7 +33,7 @@ def load_config(path, fail_warnings, ignore_warnings):
                 file_pattern = re.compile(file_pattern)
                 yield Test(
                     name=test["name"],
-                    pattern=re.compile(test["pattern"], re.MULTILINE),
+                    pattern=re.compile(test["pattern"]),
                     hint=test.get("hint"),
                     file_pattern=file_pattern,
                     error=test.get("error", True) or fail_warnings,

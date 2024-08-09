@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import collections
-import re
+
+try:
+    import regex as re
+except ImportError:
+    import re
 
 from rich import print as rprint
 from rich.console import Group
@@ -65,7 +69,7 @@ def parse_line_numbers(output):
 
 
 def parse_filenames(output):
-    return re.findall(GIT_DIFF_FILENAME_PATTERN, output)
+    return GIT_DIFF_FILENAME_PATTERN.findall(output)
 
 
 def split_diff_content_by_filename(output: str) -> {str: str}:
@@ -81,7 +85,7 @@ def split_diff_content_by_filename(output: str) -> {str: str}:
     """
     content_by_filename = {}
     filenames = parse_filenames(output)
-    split_content = re.split(GIT_DIFF_SPLIT_PATTERN, output)
+    split_content = GIT_DIFF_SPLIT_PATTERN.split(output)
     split_content = filter(lambda x: x != "", split_content)
 
     for filename, content in zip(filenames, split_content):

@@ -4,8 +4,10 @@ import warnings
 import pytest
 
 from relint.__main__ import main
+from relint.config import Test
 from relint.exceptions import ConfigError
 from relint.parse import (
+    lint_file,
     match_with_diff_changes,
     parse_diff,
     parse_filenames,
@@ -177,3 +179,40 @@ def test_no_unicode(capsys, tmpdir, fixture_dir):
         with pytest.raises(SystemExit) as exc_info:
             main(["test.png"])
     assert "0" in str(exc_info.value)
+
+
+def test_cc_linting_rule(tmpdir, fixture_dir):
+    regex = pytest.importorskip("regex")
+    cc_file = tmpdir.join("example.cpp")
+    cc_file.write(
+        "#include <iostream>\n"
+        "/* This is an extremely long COMMENT that has over one hundred and twenty characters to test whether this is recognized by the regex or not. */\n"
+        "int main() {\n"
+        '    std::cout << "This is an extremely long CODE that has over one hundred and twenty characters to test whether this is recognized by the regex or not."\n'
+        "    return 0;\n"
+        "}\n"
+    )
+
+    with (fixture_dir / ".relint.yml").open() as fs:
+        config = fs.read()
+    tmpdir.join(".relint.yml").write(config)
+
+    # Load the configuration as Test named tuples
+
+    with tmpdir.as_cwd():
+        assert list(
+            lint_file(
+                str(cc_file),
+                [
+                    Test(
+                        name="No line longer than 120 characters",
+                        pattern=regex.compile(
+                            r".{120,}(?<!\s)(?=\s|$)|.{120,}(?<=\s)(?=\s)"
+                        ),
+                        hint="There should be no line longer than 120 characters in a line.",
+                        file_pattern=regex.compile(r".*\.(cpp|h)"),
+                        error=True,
+                    )
+                ],
+            )
+        )

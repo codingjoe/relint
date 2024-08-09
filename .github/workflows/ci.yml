@@ -63,9 +63,28 @@ jobs:
     - run: py.test --cov=.
     - uses: codecov/codecov-action@v4
 
+
+  extras:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        extras:
+          - "regex"
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+      - run: python -m pip install --upgrade pip setuptools
+      - run: python -m pip install -e .[test,${{ matrix.extras }}]
+      - run: relint --version
+      - run: py.test --cov=.
+      - uses: codecov/codecov-action@v4
+
   analyze:
     name: CodeQL Analyze
-    needs: [PyTest]
+    needs: [PyTest,extras]
     runs-on: ubuntu-latest
     permissions:
       actions: read

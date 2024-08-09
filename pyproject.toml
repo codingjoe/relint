@@ -35,6 +35,9 @@ test = [
   "pytest-cov",
   "pytest-mock",
 ]
+regex = [
+  "regex"
+]
 
 [project.scripts]
 relint = "relint.__main__:main"
