@@ -4,6 +4,7 @@ import warnings
 import pytest
 
 from relint.__main__ import main
+from relint.config import Test
 from relint.exceptions import ConfigError
 from relint.parse import (
     lint_file,
@@ -13,7 +14,6 @@ from relint.parse import (
     parse_line_numbers,
     split_diff_content_by_filename,
 )
-from relint.config import Test
 
 
 class TestParseGitDiff:
@@ -210,7 +210,7 @@ def test_cc_linting_rule(tmpdir, fixture_dir):
                             r".{120,}(?<!\s)(?=\s|$)|.{120,}(?<=\s)(?=\s)"
                         ),
                         hint="There should be no line longer than 120 characters in a line.",
-                        file_pattern=regex.compile(".*\.(cpp|h)"),
+                        file_pattern=regex.compile(r".*\.(cpp|h)"),
                         error=True,
                     )
                 ],

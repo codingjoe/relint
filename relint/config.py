@@ -8,7 +8,6 @@ except ImportError:
 
 import yaml
 
-
 from .exceptions import ConfigError
 
 Test = collections.namedtuple(
