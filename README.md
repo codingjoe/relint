@@ -15,7 +15,7 @@
 ```shell-session
 python3 -m pip install relint
 # or, if you have super advanced linting expressions
-python3 -m pip install relint[regex]
+python3 -m pip install "relint[regex]"
 ```
 
 ## [Examples & Recipes – The reLint Cookbook](https://github.com/codingjoe/relint/blob/main/COOKBOOK.md)
