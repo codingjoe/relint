@@ -1,4 +1,5 @@
 import argparse
+import os
 import subprocess  # nosec
 import sys
 import warnings
@@ -6,7 +7,13 @@ import warnings
 from rich.progress import track
 
 from relint.config import load_config
-from relint.parse import lint_file, match_with_diff_changes, parse_diff, print_culprits
+from relint.parse import (
+    lint_file,
+    match_with_diff_changes,
+    parse_diff,
+    print_culprits,
+    print_github_actions_output,
+)
 
 
 def parse_args(args=None):
@@ -90,7 +97,11 @@ def main(args=None):
         changed_content = parse_diff(output)
         matches = match_with_diff_changes(changed_content, matches)
 
-    exit_code = print_culprits(matches, args)
+    GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
+    if GITHUB_ACTIONS:
+        exit_code = print_github_actions_output(matches, args)
+    else:
+        exit_code = print_culprits(matches, args)
     exit(exit_code)
 
 

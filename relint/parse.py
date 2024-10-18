@@ -93,6 +93,23 @@ def split_diff_content_by_filename(output: str) -> {str: str}:
     return content_by_filename
 
 
+def print_github_actions_output(matches, args):
+    exit_code = 0
+    for filename, test, match, line_number in matches:
+        exit_code = test.error if exit_code == 0 else exit_code
+        start_line_no = match.string[: match.start()].count("\n") + 1
+        end_line_no = match.string[: match.end()].count("\n") + 1
+        col = match.start() - match.string.rfind("\n", 0, match.start())
+        col_end = match.end() - match.string.rfind("\n", 0, match.end())
+
+        print(
+            f"::{'error' if test.error else 'warning'} file={filename},"
+            f"line={start_line_no},endLine={end_line_no},col={col},colEnd={col_end},"
+            f"title={test.name}::{test.hint}".replace("\n", "%0A")
+        )
+    return exit_code
+
+
 def print_culprits(matches, args):
     exit_code = 0
     messages = []
