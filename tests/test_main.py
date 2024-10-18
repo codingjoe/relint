@@ -44,6 +44,25 @@ class TestMain:
         assert "❱ 1 # FIXME do something" in out
         assert exc_info.value.code == 1
 
+    def test_main_execution_with_error__github_workflow_output(
+        self, monkeypatch, capsys, tmpdir, fixture_dir
+    ):
+        monkeypatch.setenv("GITHUB_ACTIONS", "true")
+        with (fixture_dir / ".relint.yml").open() as fs:
+            config = fs.read()
+        tmpdir.join(".relint.yml").write(config)
+        tmpdir.join("dummy.py").write("# FIXME do something")
+        with tmpdir.as_cwd():
+            with pytest.raises(SystemExit) as exc_info:
+                main(["dummy.py"])
+
+        out, _ = capsys.readouterr()
+        assert (
+            "::error file=dummy.py,line=1,endLine=1,col=3,colEnd=8,title=No fixme (warning)::### This is a multiline hint%0AFix it right away!%0A%0AYou can use code blocks too, like Python:%0A%0A"
+            in out
+        )
+        assert exc_info.value.code == 1
+
     @pytest.mark.parametrize("args", [[], ["--summarize"]])
     def test_main_execution_without_hint(self, args, capsys, tmpdir, fixture_dir):
         with (fixture_dir / ".relint.yml").open() as fs:
