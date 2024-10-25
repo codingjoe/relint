@@ -95,6 +95,7 @@ def split_diff_content_by_filename(output: str) -> {str: str}:
 
 def print_github_actions_output(matches, args):
     exit_code = 0
+    groups = collections.defaultdict(list)
     for filename, test, match, line_number in matches:
         exit_code = test.error if exit_code == 0 else exit_code
         start_line_no = match.string[: match.start()].count("\n") + 1
@@ -102,11 +103,16 @@ def print_github_actions_output(matches, args):
         col = match.start() - match.string.rfind("\n", 0, match.start())
         col_end = match.end() - match.string.rfind("\n", 0, match.end())
 
-        print(
+        groups[filename].append(
             f"::{'error' if test.error else 'warning'} file={filename},"
             f"line={start_line_no},endLine={end_line_no},col={col},colEnd={col_end},"
             f"title={test.name}::{test.hint}".replace("\n", "%0A")
         )
+    for filename, messages in groups.items():
+        print(f"::group::{filename}")
+        for annotation in messages:
+            print(annotation)
+        print("::endgroup::")
     return exit_code
 
 
