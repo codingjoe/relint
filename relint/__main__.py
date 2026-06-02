@@ -54,11 +54,13 @@ def parse_args(args=None):
         action="store_true",
         help="Do not output warnings. Could be useful when using relint in CI.",
     )
-    parser.add_argument(
-        "--summarize",
-        action="store_true",
-        help="Summarize the output by grouping matches by test.",
-    ),
+    (
+        parser.add_argument(
+            "--summarize",
+            action="store_true",
+            help="Summarize the output by grouping matches by test.",
+        ),
+    )
     parser.add_argument(
         "--code-padding",
         type=int,
@@ -89,9 +91,9 @@ def main(args=None):
     if args.diff:
         output = sys.stdin.read()
     elif args.git_diff:
-        output = subprocess.check_output(  # nosec
-            ["git", "diff", "--staged", "--unified=0", "--no-color"],
-            universal_newlines=True,
+        output = subprocess.check_output(
+            ["git", "diff", "--staged", "--unified=0", "--no-color"],  # noqa: S607
+            text=True,
         )
     if args.diff or args.git_diff:
         changed_content = parse_diff(output)

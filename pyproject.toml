@@ -23,20 +23,25 @@ classifiers = [
   "Topic :: Software Development :: Quality Assurance",
   "Topic :: Software Development :: Testing",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 dependencies = [
   "PyYAML",
   "rich",
 ]
 
 [project.optional-dependencies]
+regex = [
+  "regex"
+]
+
+[dependency-groups]
+dev = [
+  { include-group = "test" },
+]
 test = [
   "pytest",
   "pytest-cov",
   "pytest-mock",
-]
-regex = [
-  "regex"
 ]
 
 [project.scripts]
@@ -63,16 +68,29 @@ source = ["relint"]
 [tool.coverage.report]
 show_missing = true
 
-[tool.isort]
-atomic = true
-line_length = 88
-multi_line_output = 3
-force_grid_wrap = 0
-known_first_party = "relint, tests"
-include_trailing_comma = true
-use_parentheses = true
-default_section = "THIRDPARTY"
-combine_as_imports = true
+[tool.ruff]
+src = ["relint", "tests"]
 
-[tool.pydocstyle]
-add_ignore = "D1"
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "S", # flake8-bandit
+    "D", # pydocstyle
+    "UP", # pyupgrade
+    "B", # flake8-bugbear
+    "C", # flake8-comprehensions
+]
+
+ignore = ["B904", "D1", "E501", "S101"]
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+split-on-trailing-comma = true
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+force-wrap-aliases = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "pep257"
