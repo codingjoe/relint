@@ -3,7 +3,6 @@
   hint: Get it done right away!
   filePattern: ^(?!.*test_).*\.(py|js)$
   error: false
-
 - name: No fixme (warning)
   pattern: '[fF][iI][xX][mM][eE]'
   hint: |
@@ -28,10 +27,8 @@
     - print('hello world')
     + console.log('hello world')
     ```
-
   filePattern: ^(?!.*test_).*\.(py|js)$
   error: true
-
 - name: no hint
   pattern: '(?i)hint'
   filePattern: ^(?!.*test_).*\.(py|js)$

@@ -2,7 +2,6 @@ import io
 import sys
 
 import pytest
-
 import relint
 from relint.__main__ import main
 
@@ -136,9 +135,7 @@ class TestMain:
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# TODO do something")
         diff = io.StringIO(
-            "diff --git a/dummy.py b/dummy.py\n"
-            "@@ -0,0 +1 @@\n"
-            "+# TODO do something"
+            "diff --git a/dummy.py b/dummy.py\n@@ -0,0 +1 @@\n+# TODO do something"
         )
 
         mocker.patch.object(sys, "stdin", diff)

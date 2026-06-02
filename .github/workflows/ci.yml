@@ -1,90 +1,51 @@
 name: CI
-
 on:
   push:
     branches:
-    - main
+      - main
   pull_request:
-
 jobs:
-
   dist:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.x"
-      - run: python -m pip install --upgrade pip build wheel twine
-      - run: python -m build --sdist --wheel
-      - run: python -m twine check dist/*
+      - uses: astral-sh/setup-uv@v7
+      - run: uvx --from build pyproject-build --sdist --wheel
+      - run: uvx twine check dist/*
       - uses: actions/upload-artifact@v7
         with:
           path: dist/*
-
-  lint:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        lint-command:
-          - bandit -r . -x ./tests
-          - black --check --diff .
-          - flake8 .
-          - isort --check-only --diff .
-          - pydocstyle .
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.x"
-          cache: 'pip'
-          cache-dependency-path: 'linter-requirements.txt'
-      - run: python -m pip install -r linter-requirements.txt
-      - run: ${{ matrix.lint-command }}
-
   PyTest:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version:
-          - "3.8"
-          - "3.9"
-          - "3.10"
-          - "3.11"
-
+          - "3.12"
+          - "3.13"
+          - "3.14"
     steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-python@v6
-      with:
-        python-version: ${{ matrix.python-version }}
-    - run: python -m pip install --upgrade pip setuptools
-    - run: python -m pip install -e .[test]
-    - run: relint --version
-    - run: py.test --cov=.
-    - uses: codecov/codecov-action@v6
-
-
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: uv run relint --version
+      - run: uv run --group test py.test --cov=.
+      - uses: codecov/codecov-action@v6
   extras:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         extras:
           - "regex"
-
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-python@v6
-        with:
-          python-version: "3.x"
-      - run: python -m pip install --upgrade pip setuptools
-      - run: python -m pip install -e .[test,${{ matrix.extras }}]
-      - run: relint --version
-      - run: py.test --cov=.
+      - uses: astral-sh/setup-uv@v7
+      - run: uv run relint --version
+      - run: uv run --group test --extra ${{ matrix.extras }} py.test --cov=.
       - uses: codecov/codecov-action@v6
-
   analyze:
     name: CodeQL Analyze
-    needs: [PyTest,extras]
+    needs: [PyTest, extras]
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -93,7 +54,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ python ]
+        language: [python]
     steps:
       - name: Checkout
         uses: actions/checkout@v6

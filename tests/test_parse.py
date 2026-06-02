@@ -2,7 +2,6 @@ import subprocess
 import warnings
 
 import pytest
-
 from relint.__main__ import main
 from relint.config import Test
 from relint.exceptions import ConfigError
@@ -159,7 +158,7 @@ class TestParseGitDiff:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# TODO do something")
-        subprocess.check_call(["git", "init"], cwd=tmpdir.strpath)  # nosec
+        subprocess.check_call(["git", "init"], cwd=tmpdir.strpath)  # noqa: S607
 
         with tmpdir.as_cwd():
             with pytest.raises(SystemExit) as exc_info:

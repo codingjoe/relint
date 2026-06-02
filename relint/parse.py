@@ -88,7 +88,7 @@ def split_diff_content_by_filename(output: str) -> {str: str}:
     split_content = GIT_DIFF_SPLIT_PATTERN.split(output)
     split_content = filter(lambda x: x != "", split_content)
 
-    for filename, content in zip(filenames, split_content):
+    for filename, content in zip(filenames, split_content, strict=True):
         content_by_filename[filename] = content
     return content_by_filename
 
@@ -96,7 +96,7 @@ def split_diff_content_by_filename(output: str) -> {str: str}:
 def print_github_actions_output(matches, args):
     exit_code = 0
     groups = collections.defaultdict(list)
-    for filename, test, match, line_number in matches:
+    for filename, test, match, _ in matches:
         exit_code = test.error if exit_code == 0 else exit_code
         start_line_no = match.string[: match.start()].count("\n") + 1
         end_line_no = match.string[: match.end()].count("\n") + 1

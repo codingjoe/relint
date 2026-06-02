@@ -42,7 +42,9 @@ def load_config(path, fail_warnings, ignore_warnings):
             raise ConfigError("Error parsing your relint config file.") from e
         except TypeError:
             warnings.warn(
-                "Your relint config is empty, no tests were executed.", UserWarning
+                "Your relint config is empty, no tests were executed.",
+                UserWarning,
+                stacklevel=2,
             )
         except (AttributeError, ValueError) as e:
             raise ConfigError(

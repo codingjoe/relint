@@ -1,7 +1,7 @@
--   id: relint
-    name: relint
-    description: 'Write your own linting rules using regular expressions.'
-    entry: relint
-    args: [--git-diff]
-    language: python
-    types: [file]
+- id: relint
+  name: relint
+  description: 'Write your own linting rules using regular expressions.'
+  entry: relint
+  args: [--git-diff]
+  language: python
+  types: [file]
