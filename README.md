@@ -10,6 +10,10 @@
 [![Test Coverage](https://codecov.io/gh/codingjoe/relint/branch/main/graph/badge.svg)](https://codecov.io/gh/codingjoe/relint)
 [![GitHub License](https://img.shields.io/github/license/codingjoe/relint)](https://raw.githubusercontent.com/codingjoe/relint/main/LICENSE)
 
+## Sponsors
+
+[![Sponsors](https://django.the-box.sh/sponsors/codingjoe/relint.svg)](https://github.com/sponsors/codingjoe)
+
 ## Installation
 
 ```shell-session
