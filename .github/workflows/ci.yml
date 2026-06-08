@@ -30,7 +30,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - run: uv run relint --version
       - run: uv run --group test py.test --cov=.
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
   extras:
     runs-on: ubuntu-latest
     strategy:
@@ -42,7 +42,7 @@ jobs:
       - uses: astral-sh/setup-uv@v7
       - run: uv run relint --version
       - run: uv run --group test --extra ${{ matrix.extras }} py.test --cov=.
-      - uses: codecov/codecov-action@v6
+      - uses: codecov/codecov-action@v7
   analyze:
     name: CodeQL Analyze
     needs: [PyTest, extras]
