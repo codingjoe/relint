@@ -122,7 +122,6 @@ class TestParseGitDiff:
 
         assert parsed_content == expected
 
-
     def test_parse_diff_with_mnemonic_prefixes(self):
         output = (
             "diff --git c/sql/very-important-sql.sql i/sql/very-important-sql.sql\n"
