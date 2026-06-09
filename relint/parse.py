@@ -14,8 +14,13 @@ from rich.panel import Panel
 from rich.syntax import Syntax
 
 GIT_DIFF_LINE_NUMBERS_PATTERN = re.compile(r"@ -\d+(,\d+)? \+(\d+)(,)?(\d+)? @")
-GIT_DIFF_FILENAME_PATTERN = re.compile(r"(?:\n|^)diff --git a\/.* b\/(.*)(?:\n|$)")
-GIT_DIFF_SPLIT_PATTERN = re.compile(r"(?:\n|^)diff --git a\/.* b\/.*(?:\n|$)")
+GIT_DIFF_PREFIX_PATTERN = r"[^/\n]+/"
+GIT_DIFF_FILENAME_PATTERN = re.compile(
+    rf"(?:\n|^)diff --git {GIT_DIFF_PREFIX_PATTERN}.* {GIT_DIFF_PREFIX_PATTERN}(.*)(?:\n|$)"
+)
+GIT_DIFF_SPLIT_PATTERN = re.compile(
+    rf"(?:\n|^)diff --git {GIT_DIFF_PREFIX_PATTERN}.* {GIT_DIFF_PREFIX_PATTERN}.*(?:\n|$)"
+)
 
 
 def lint_file(filename, tests):

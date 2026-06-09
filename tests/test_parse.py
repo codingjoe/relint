@@ -34,6 +34,10 @@ class TestParseGitDiff:
                 "diff --git a/pardal/authserver/app.py b/pardal/authserver/app.py",
                 "pardal/authserver/app.py",
             ),
+            (
+                "diff --git c/sql/very-important-sql.sql i/sql/very-important-sql.sql",
+                "sql/very-important-sql.sql",
+            ),
         ],
     )
     def test_parse_filenames(self, output, expected_filename):
@@ -118,6 +122,21 @@ class TestParseGitDiff:
 
         assert parsed_content == expected
 
+    def test_parse_diff_with_mnemonic_prefixes(self):
+        output = (
+            "diff --git c/test_parse.py i/test_parse.py\n"
+            "index 9c7f392..9bde2ad 100644\n"
+            "--- c/test_parse.py\n"
+            "+++ i/test_parse.py\n"
+            "@@ -1,0 +2 @@\n"
+            "+# TODO: I'll do it later, promise\n"
+        )
+
+        parsed_content = parse_diff(output)
+        expected = {"test_parse.py": [2]}
+
+        assert parsed_content == expected
+
     def test_empty_config_file(self, tmpdir):
         tmpdir.join(".relint.yml").write("")
         tmpdir.join("dummy.py").write("")
@@ -165,6 +184,25 @@ class TestParseGitDiff:
                 main(["dummy.py", "--git-diff"])
 
         assert "0" in str(exc_info.value)
+
+    def test_git_diff_with_mnemonic_prefixes(self, capsys, tmpdir, fixture_dir):
+        with (fixture_dir / ".relint.yml").open() as fs:
+            config = fs.read()
+        tmpdir.join(".relint.yml").write(config)
+        tmpdir.join("dummy.py").write("# TODO do something")
+        subprocess.check_call(["git", "init"], cwd=tmpdir.strpath)  # noqa: S607
+        subprocess.check_call(  # noqa: S607
+            ["git", "config", "diff.mnemonicPrefix", "true"], cwd=tmpdir.strpath
+        )
+        subprocess.check_call(["git", "add", "dummy.py"], cwd=tmpdir.strpath)  # noqa: S607
+
+        with tmpdir.as_cwd():
+            with pytest.raises(SystemExit) as exc_info:
+                main(["dummy.py", "--git-diff"])
+
+        out, _ = capsys.readouterr()
+        assert "Get it done right away!" in out
+        assert exc_info.value.code == 0
 
 
 def test_no_unicode(capsys, tmpdir, fixture_dir):
