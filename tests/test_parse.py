@@ -191,8 +191,9 @@ class TestParseGitDiff:
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# TODO do something")
         subprocess.check_call(["git", "init"], cwd=tmpdir.strpath)  # noqa: S607
-        subprocess.check_call(  # noqa: S607
-            ["git", "config", "diff.mnemonicPrefix", "true"], cwd=tmpdir.strpath
+        subprocess.check_call(
+            ["git", "config", "diff.mnemonicPrefix", "true"],  # noqa: S607
+            cwd=tmpdir.strpath,
         )
         subprocess.check_call(["git", "add", "dummy.py"], cwd=tmpdir.strpath)  # noqa: S607
 
