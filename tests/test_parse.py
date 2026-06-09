@@ -34,6 +34,10 @@ class TestParseGitDiff:
                 "diff --git a/pardal/authserver/app.py b/pardal/authserver/app.py",
                 "pardal/authserver/app.py",
             ),
+            (
+                "diff --git c/sql/very-important-sql.sql i/sql/very-important-sql.sql",
+                "sql/very-important-sql.sql",
+            ),
         ],
     )
     def test_parse_filenames(self, output, expected_filename):
@@ -115,6 +119,23 @@ class TestParseGitDiff:
 
         parsed_content = parse_diff(output)
         expected = {"test_parse.py": [2]}
+
+        assert parsed_content == expected
+
+
+    def test_parse_diff_with_mnemonic_prefixes(self):
+        output = (
+            "diff --git c/sql/very-important-sql.sql i/sql/very-important-sql.sql\n"
+            "index 9c7f392..9bde2ad 100644\n"
+            "--- c/sql/very-important-sql.sql\n"
+            "+++ i/sql/very-important-sql.sql\n"
+            "@@ -1 +1 @@\n"
+            "-select 1;\n"
+            "+select 2;\n"
+        )
+
+        parsed_content = parse_diff(output)
+        expected = {"sql/very-important-sql.sql": [1]}
 
         assert parsed_content == expected
 
