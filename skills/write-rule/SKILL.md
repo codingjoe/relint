@@ -1,5 +1,6 @@
 ---
 description: Author and edit reLint rules in a .relint.yml config. Use when the user wants to create a new linting rule, write a regex-based linter, modify existing relint rules, or add rules from the Cookbook.
+allowed-tools: Bash(uvx relint *) Bash(relint *) Read
 ---
 
 # Write reLint Rules

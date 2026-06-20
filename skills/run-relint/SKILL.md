@@ -1,5 +1,6 @@
 ---
 description: Run reLint to lint files using regular expression rules. Use when the user wants to run relint, check files against relint rules, lint a diff, or configure relint in pre-commit/CI.
+allowed-tools: Bash(uvx relint *) Bash(relint *) Read
 ---
 
 # Run reLint
