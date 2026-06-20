@@ -1,0 +1,19 @@
+{
+  "author": {
+    "name": "Johannes Maron",
+    "url": "https://github.com/codingjoe"
+  },
+  "description": "Regular Expression Linter \u2014 write your own linting rules using regular expressions. Skills for running relint and authoring new rules.",
+  "displayName": "reLint",
+  "homepage": "https://github.com/codingjoe/relint",
+  "keywords": [
+    "linter",
+    "regex",
+    "linting",
+    "rules"
+  ],
+  "license": "MIT",
+  "name": "relint",
+  "repository": "https://github.com/codingjoe/relint",
+  "version": "1.0.0"
+}

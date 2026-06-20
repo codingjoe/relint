@@ -35,6 +35,7 @@ repos:
         additional_dependencies:
           - mdformat-beautysh
           - mdformat-footnote
+          - mdformat-frontmatter
           - mdformat-gfm
           - mdformat-gfm-alerts
           - mdformat-ruff
