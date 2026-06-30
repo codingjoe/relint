@@ -149,6 +149,7 @@ def print_culprits(matches, args):
                             end_line_no + args.code_padding,
                         ),
                         highlight_lines=range(start_line_no, end_line_no + 1),
+                        word_wrap=True,
                     )
                 )
 
