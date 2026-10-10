@@ -16,6 +16,9 @@ jobs:
         with:
           path: dist/*
   PyTest:
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -29,7 +32,12 @@ jobs:
       - run: uv run relint --version
       - run: uv run --group test py.test --cov=.
       - uses: codecov/codecov-action@v7
+        with:
+          use_oidc: true
   extras:
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -41,6 +49,8 @@ jobs:
       - run: uv run relint --version
       - run: uv run --group test --extra ${{ matrix.extras }} py.test --cov=.
       - uses: codecov/codecov-action@v7
+        with:
+          use_oidc: true
   analyze:
     name: CodeQL Analyze
     needs: [PyTest, extras]
