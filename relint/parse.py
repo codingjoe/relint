@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import collections
 
 try:
@@ -27,7 +25,7 @@ def lint_file(filename, tests):
     try:
         with open(filename) as fs:
             content = fs.read()
-    except (IsADirectoryError, UnicodeDecodeError):
+    except IsADirectoryError, UnicodeDecodeError:
         pass
     else:
         for test in tests:
