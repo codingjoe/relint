@@ -8,9 +8,8 @@ from relint.__main__ import main
 
 def test_version(tmpdir, capsys):
     """Test that the version is correct."""
-    with tmpdir.as_cwd():
-        with pytest.raises(SystemExit) as exc_info:
-            main(["--version"])
+    with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
+        main(["--version"])
     assert "0" in str(exc_info.value)
     assert f"relint: {relint.__version__}" in capsys.readouterr().out
 
@@ -21,9 +20,8 @@ class TestMain:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# TODO do something")
-        with tmpdir.as_cwd():
-            with pytest.raises(SystemExit) as exc_info:
-                main(["dummy.py"])
+        with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
+            main(["dummy.py"])
 
         assert exc_info.value.code == 0
 
@@ -32,9 +30,8 @@ class TestMain:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# FIXME do something")
-        with tmpdir.as_cwd():
-            with pytest.raises(SystemExit) as exc_info:
-                main(["dummy.py"])
+        with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
+            main(["dummy.py"])
 
         out, _ = capsys.readouterr()
         assert "dummy.py:1" in out
@@ -51,9 +48,8 @@ class TestMain:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# FIXME do something")
-        with tmpdir.as_cwd():
-            with pytest.raises(SystemExit) as exc_info:
-                main(["dummy.py"])
+        with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
+            main(["dummy.py"])
 
         out, _ = capsys.readouterr()
         assert (
@@ -68,9 +64,8 @@ class TestMain:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# hint: 🤐")
-        with tmpdir.as_cwd():
-            with pytest.raises(SystemExit):
-                main(["dummy.py", *args])
+        with tmpdir.as_cwd(), pytest.raises(SystemExit):
+            main(["dummy.py", *args])
 
         out, _ = capsys.readouterr()
         assert "dummy.py:1" in out
@@ -81,9 +76,8 @@ class TestMain:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# TODO do something")
-        with tmpdir.as_cwd():
-            with pytest.raises(SystemExit) as exc_info:
-                main(["dummy.py", "-W"])
+        with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
+            main(["dummy.py", "-W"])
 
         assert exc_info.value.code == 1
 
@@ -92,9 +86,8 @@ class TestMain:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# TODO do something")
-        with tmpdir.as_cwd():
-            with pytest.raises(SystemExit) as exc_info:
-                main(["dummy.py", "--ignore-warnings"])
+        with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
+            main(["dummy.py", "--ignore-warnings"])
 
         assert exc_info.value.code == 0
 
@@ -103,9 +96,8 @@ class TestMain:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# FIXME do something")
-        with tmpdir.as_cwd():
-            with pytest.raises(SystemExit) as exc_info:
-                main(["dummy.py", "--summarize"])
+        with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
+            main(["dummy.py", "--summarize"])
 
         out, _ = capsys.readouterr()
         assert "dummy.py:1" in out
@@ -119,9 +111,8 @@ class TestMain:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# FIXME do something")
-        with tmpdir.as_cwd():
-            with pytest.raises(SystemExit) as exc_info:
-                main(["dummy.py", "--code-padding=-1"])
+        with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
+            main(["dummy.py", "--code-padding=-1"])
 
         out, _ = capsys.readouterr()
         assert "dummy.py:1" in out
@@ -140,9 +131,8 @@ class TestMain:
 
         mocker.patch.object(sys, "stdin", diff)
 
-        with tmpdir.as_cwd():
-            with pytest.raises(SystemExit) as exc_info:
-                main(["dummy.py", "--diff"])
+        with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
+            main(["dummy.py", "--diff"])
 
         out, _ = capsys.readouterr()
         assert "Get it done right away!" in out

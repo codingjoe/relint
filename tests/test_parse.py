@@ -141,10 +141,9 @@ class TestParseGitDiff:
         tmpdir.join(".relint.yml").write("")
         tmpdir.join("dummy.py").write("")
 
-        with tmpdir.as_cwd():
-            with warnings.catch_warnings(record=True) as w:
-                with pytest.raises(SystemExit) as exc_info:
-                    main(["dummy.py"])
+        with tmpdir.as_cwd(), warnings.catch_warnings(record=True) as w:
+            with pytest.raises(SystemExit) as exc_info:
+                main(["dummy.py"])
 
         assert exc_info.value.code == 0
         assert issubclass(w[-1].category, UserWarning)
@@ -155,9 +154,8 @@ class TestParseGitDiff:
     def test_malformed_config_file(self, tmpdir):
         tmpdir.join(".relint.yml").write("test:")
 
-        with tmpdir.as_cwd():
-            with pytest.raises(ConfigError) as exc_info:
-                main(["**"])
+        with tmpdir.as_cwd(), pytest.raises(ConfigError) as exc_info:
+            main(["**"])
 
         assert "Your relint config is not a valid YAML list of relint tests." in str(
             exc_info.value
@@ -166,9 +164,8 @@ class TestParseGitDiff:
     def test_corrupt_config_file(self, tmpdir):
         tmpdir.join(".relint.yml").write(b"\x00")
 
-        with tmpdir.as_cwd():
-            with pytest.raises(ConfigError) as exc_info:
-                main(["**"])
+        with tmpdir.as_cwd(), pytest.raises(ConfigError) as exc_info:
+            main(["**"])
 
         assert "Error parsing your relint config file." in str(exc_info.value)
 
@@ -179,9 +176,8 @@ class TestParseGitDiff:
         tmpdir.join("dummy.py").write("# TODO do something")
         subprocess.check_call(["git", "init"], cwd=tmpdir.strpath)  # noqa: S607
 
-        with tmpdir.as_cwd():
-            with pytest.raises(SystemExit) as exc_info:
-                main(["dummy.py", "--git-diff"])
+        with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
+            main(["dummy.py", "--git-diff"])
 
         assert "0" in str(exc_info.value)
 
@@ -197,9 +193,8 @@ class TestParseGitDiff:
         )
         subprocess.check_call(["git", "add", "dummy.py"], cwd=tmpdir.strpath)  # noqa: S607
 
-        with tmpdir.as_cwd():
-            with pytest.raises(SystemExit) as exc_info:
-                main(["dummy.py", "--git-diff"])
+        with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
+            main(["dummy.py", "--git-diff"])
 
         out, _ = capsys.readouterr()
         assert "Get it done right away!" in out
@@ -213,9 +208,8 @@ def test_no_unicode(capsys, tmpdir, fixture_dir):
     with (fixture_dir / "test.png").open("rb") as fs:
         png = fs.read()
     tmpdir.join("test.png").write(png, mode="wb")
-    with tmpdir.as_cwd():
-        with pytest.raises(SystemExit) as exc_info:
-            main(["test.png"])
+    with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
+        main(["test.png"])
     assert "0" in str(exc_info.value)
 
 
