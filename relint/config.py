@@ -5,6 +5,7 @@ try:
     import regex as re
 except ImportError:
     import re
+from pathlib import Path
 
 import yaml
 
@@ -23,7 +24,7 @@ Test = collections.namedtuple(
 
 
 def load_config(path, fail_warnings, ignore_warnings):
-    with open(path) as fs:
+    with Path(path).open() as fs:
         try:
             for test in yaml.safe_load(fs):
                 if ignore_warnings and not test.get("error", True):
@@ -39,7 +40,8 @@ def load_config(path, fail_warnings, ignore_warnings):
                     error=test.get("error", True) or fail_warnings,
                 )
         except yaml.YAMLError as e:
-            raise ConfigError("Error parsing your relint config file.") from e
+            msg = "Error parsing your relint config file."
+            raise ConfigError(msg) from e
         except TypeError:
             warnings.warn(
                 "Your relint config is empty, no tests were executed.",
@@ -47,6 +49,5 @@ def load_config(path, fail_warnings, ignore_warnings):
                 stacklevel=2,
             )
         except (AttributeError, ValueError) as e:
-            raise ConfigError(
-                "Your relint config is not a valid YAML list of relint tests."
-            ) from e
+            msg = "Your relint config is not a valid YAML list of relint tests."
+            raise ConfigError(msg) from e

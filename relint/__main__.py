@@ -78,8 +78,8 @@ def main(args=None):
     if args.version:
         from . import __version__
 
-        print(f"relint: {__version__}")
-        exit(0)
+        sys.stdout.write(f"relint: {__version__}\n")
+        sys.exit(0)
 
     tests = list(load_config(args.config, args.fail_warnings, args.ignore_warnings))
 
@@ -99,12 +99,12 @@ def main(args=None):
         changed_content = parse_diff(output)
         matches = match_with_diff_changes(changed_content, matches)
 
-    GITHUB_ACTIONS = os.getenv("GITHUB_ACTIONS") == "true"
-    if GITHUB_ACTIONS:
+    github_actions = os.getenv("GITHUB_ACTIONS") == "true"
+    if github_actions:
         exit_code = print_github_actions_output(matches, args)
     else:
         exit_code = print_culprits(matches, args)
-    exit(exit_code)
+    sys.exit(exit_code)
 
 
 if not sys.warnoptions:
