@@ -1,9 +1,12 @@
 import collections
+import sys
 
 try:
     import regex as re
 except ImportError:
     import re
+
+from pathlib import Path
 
 from rich import print as rprint
 from rich.console import Group
@@ -23,7 +26,7 @@ GIT_DIFF_SPLIT_PATTERN = re.compile(
 
 def lint_file(filename, tests):
     try:
-        with open(filename) as fs:
+        with Path(filename).open() as fs:
             content = fs.read()
     except IsADirectoryError, UnicodeDecodeError:
         pass
@@ -86,14 +89,14 @@ def split_diff_content_by_filename(output: str) -> {str: str}:
         dict: Filename and its content.
 
     """
-    content_by_filename = {}
     filenames = parse_filenames(output)
     split_content = GIT_DIFF_SPLIT_PATTERN.split(output)
     split_content = filter(lambda x: x != "", split_content)
 
-    for filename, content in zip(filenames, split_content, strict=True):
-        content_by_filename[filename] = content
-    return content_by_filename
+    return {
+        filename: content
+        for filename, content in zip(filenames, split_content, strict=True)
+    }
 
 
 def print_github_actions_output(matches, args):
@@ -112,10 +115,10 @@ def print_github_actions_output(matches, args):
             f"title={test.name}::{test.hint}".replace("\n", "%0A")
         )
     for filename, messages in groups.items():
-        print(f"::group::{filename}")
+        sys.stdout.write(f"::group::{filename}\n")
         for annotation in messages:
-            print(annotation)
-        print("::endgroup::")
+            sys.stdout.write(f"{annotation}\n")
+        sys.stdout.write("::endgroup::\n")
     return exit_code
 
 

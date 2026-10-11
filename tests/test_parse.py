@@ -27,7 +27,7 @@ class TestParseGitDiff:
         assert parse_line_numbers(output) == [54]
 
     @pytest.mark.parametrize(
-        "output,expected_filename",
+        ("output", "expected_filename"),
         [
             ("diff --git a/relint.py b/relint.py", "relint.py"),
             (
@@ -141,9 +141,12 @@ class TestParseGitDiff:
         tmpdir.join(".relint.yml").write("")
         tmpdir.join("dummy.py").write("")
 
-        with tmpdir.as_cwd(), warnings.catch_warnings(record=True) as w:
-            with pytest.raises(SystemExit) as exc_info:
-                main(["dummy.py"])
+        with (
+            tmpdir.as_cwd(),
+            warnings.catch_warnings(record=True) as w,
+            pytest.raises(SystemExit) as exc_info,
+        ):
+            main(["dummy.py"])
 
         assert exc_info.value.code == 0
         assert issubclass(w[-1].category, UserWarning)
@@ -174,7 +177,7 @@ class TestParseGitDiff:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# TODO do something")
-        subprocess.check_call(["git", "init"], cwd=tmpdir.strpath)  # noqa: S607
+        subprocess.check_call(["git", "init"], cwd=tmpdir.strpath)
 
         with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
             main(["dummy.py", "--git-diff"])
@@ -186,12 +189,12 @@ class TestParseGitDiff:
             config = fs.read()
         tmpdir.join(".relint.yml").write(config)
         tmpdir.join("dummy.py").write("# TODO do something")
-        subprocess.check_call(["git", "init"], cwd=tmpdir.strpath)  # noqa: S607
+        subprocess.check_call(["git", "init"], cwd=tmpdir.strpath)
         subprocess.check_call(
-            ["git", "config", "diff.mnemonicPrefix", "true"],  # noqa: S607
+            ["git", "config", "diff.mnemonicPrefix", "true"],
             cwd=tmpdir.strpath,
         )
-        subprocess.check_call(["git", "add", "dummy.py"], cwd=tmpdir.strpath)  # noqa: S607
+        subprocess.check_call(["git", "add", "dummy.py"], cwd=tmpdir.strpath)
 
         with tmpdir.as_cwd(), pytest.raises(SystemExit) as exc_info:
             main(["dummy.py", "--git-diff"])
