@@ -30,7 +30,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: uv run relint --version
-      - run: uv run --group test py.test --cov=.
+      - run: uv run --with=pytest-github-actions-annotate-failures --group test py.test --cov=.
       - uses: codecov/codecov-action@v7
         with:
           use_oidc: true
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
       - run: uv run relint --version
-      - run: uv run --group test --extra ${{ matrix.extras }} py.test --cov=.
+      - run: uv run --with=pytest-github-actions-annotate-failures --group test --extra ${{ matrix.extras }} py.test --cov=.
       - uses: codecov/codecov-action@v7
         with:
           use_oidc: true
